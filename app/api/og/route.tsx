@@ -4,7 +4,6 @@
 // IMPORTANT: Do NOT add openGraph.images here — that blocks dynamic OG images.
 
 import type { Metadata } from "next";
-import "./globals.css";
 
 const SITE_URL  = "https://isitinthebible.com";
 const SITE_NAME = "Is it in the Bible?";
