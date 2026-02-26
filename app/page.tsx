@@ -1,65 +1,168 @@
-import Image from "next/image";
+// app/page.tsx
+// Server component — handles ?q= param for SSR metadata + prefetch.
+// HomeClient (client component) handles all interactivity.
 
-export default function Home() {
+import type { Metadata } from "next";
+import HomeClient from "@/app/HomeClient";
+// ─── Types (shared with API route) ────────────────────────────────────────────
+type Classification =
+  | "Directly Stated"
+  | "Concept Present"
+  | "Inferred"
+  | "Cultural"
+  | "Church Tradition";
+
+interface BibleResult {
+  query: string;
+  classification: Classification;
+  explicitnessScore: number;
+  oneLiner: string;
+  originEra: string;
+  closestBiblicalTheme: string;
+  searchPopularity: string;
+  theologicalConsensus: string;
+  timeline: { year: string; label: string; detail: string }[];
+  verses: { ref: string; text: string; context: string }[];
+  misquoteWhat: string;
+  misquoteReality: string;
+  analysis: string;
+  confidenceNote: string;
+  relatedTopics: { query: string; classification: Classification }[];
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const SITE_URL  = "https://isitinthebible.com";
+const SITE_NAME = "Is it in the Bible?";
+const SITE_DESC =
+  "AI-powered biblical fact-checker. Type any phrase, doctrine, or belief and find out exactly what Scripture says — with the actual verses to back it up.";
+
+// Classification → human-readable verdict for OG description
+const VERDICT_LABELS: Record<Classification, string> = {
+  "Directly Stated":  "✅ Directly Stated in Scripture",
+  "Concept Present":  "💡 Concept Present in Scripture",
+  "Inferred":         "🔍 Inferred from Scripture",
+  "Cultural":         "❌ Not in the Bible",
+  "Church Tradition": "⛪ Church Tradition — not in Scripture",
+};
+
+// ─── Server-side result fetcher ────────────────────────────────────────────────
+// Called at request time only when ?q= is present.
+// Re-uses the same Gemini logic as the API route by hitting the internal endpoint.
+// On failure we return null — the client will re-fetch on mount.
+async function fetchResult(query: string): Promise<BibleResult | null> {
+  try {
+    const res = await fetch(`${SITE_URL}/api/analyze`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ statement: query }),
+      // Next.js cache: revalidate every 24 h so repeated ?q= requests are fast
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return (json.result as BibleResult) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Dynamic metadata ─────────────────────────────────────────────────────────
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const query  = params?.q?.trim() ?? "";
+
+  // ── No query → return site defaults (layout.tsx handles the base) ──────────
+  if (!query) {
+    return {
+      title:       SITE_NAME,
+      description: SITE_DESC,
+      openGraph: {
+        title:       SITE_NAME,
+        description: SITE_DESC,
+        url:         SITE_URL,
+        images: [
+          {
+            url:    `${SITE_URL}/api/og`,
+            width:  1200,
+            height: 630,
+            alt:    SITE_NAME,
+          },
+        ],
+      },
+      twitter: {
+        card:        "summary_large_image",
+        title:       SITE_NAME,
+        description: SITE_DESC,
+        images:      [`${SITE_URL}/api/og`],
+      },
+      alternates: { canonical: SITE_URL },
+    };
+  }
+
+  // ── Query present → fetch result for rich metadata ─────────────────────────
+  const result = await fetchResult(query);
+
+  const title       = result
+    ? `${query} — ${VERDICT_LABELS[result.classification]}`
+    : `"${query}" — Is it in the Bible?`;
+
+  const description = result
+    ? `${result.oneLiner} Verdict: ${VERDICT_LABELS[result.classification]}. Analyzed against all 31,102 Bible verses.`
+    : `Find out if "${query}" is in the Bible. AI-powered analysis of all 31,102 Bible verses.`;
+
+  const ogImageUrl = `${SITE_URL}/api/og?q=${encodeURIComponent(query)}${
+    result ? `&c=${encodeURIComponent(result.classification)}&s=${result.explicitnessScore}&v=${encodeURIComponent(result.oneLiner)}` : ""
+  }`;
+
+  const canonicalUrl = `${SITE_URL}?q=${encodeURIComponent(query)}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      images: [
+        {
+          url:    ogImageUrl,
+          width:  1200,
+          height: 630,
+          alt:    title,
+        },
+      ],
+    },
+    twitter: {
+      card:        "summary_large_image",
+      title,
+      description,
+      images:      [ogImageUrl],
+    },
+    alternates: { canonical: canonicalUrl },
+  };
+}
+
+// ─── Page component ───────────────────────────────────────────────────────────
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>;
+}) {
+  const params = await searchParams;
+  const query  = params?.q?.trim() ?? "";
+
+  // Pre-fetch on the server so the modal opens instantly (no loading state)
+  // when someone arrives via a shared link.
+  const prefetchedResult = query ? await fetchResult(query) : null;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <HomeClient
+      prefetchedResult={prefetchedResult}
+      initialQuery={query || null}
+    />
   );
 }
