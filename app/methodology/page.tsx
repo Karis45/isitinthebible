@@ -119,7 +119,7 @@ const STEPS = [
   {
     number: "02",
     title: "AI analysis begins",
-    body: "We pass your query to Google Gemini — a large language model trained on extensive biblical and theological sources — with a precise academic prompt.",
+    body: "Our purpose-built biblical AI activates — applying a rigorous academic framework developed specifically for Scripture. It cross-references theology, historical context, and original language nuance to deliver a verdict that a keyword search never could.",
   },
   {
     number: "03",
@@ -143,6 +143,50 @@ const STEPS = [
   },
 ];
 
+// Shared LogoMark SVG — matches HomeClient.tsx exactly
+function LogoMark({ size = 36 }: { size?: number }) {
+  return (
+    <div style={{
+      width: size, height: size, background: T.blue,
+      borderRadius: Math.round(size * 0.25),
+      display: "flex", alignItems: "center", justifyContent: "center",
+      flexShrink: 0, boxShadow: "0 2px 8px rgba(26,58,106,.28)",
+    }}>
+      <svg
+        width={size - 8} height={size - 8}
+        viewBox="0 0 24 24" fill="none"
+        stroke="white" strokeWidth="1.7"
+        strokeLinecap="round" strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        <circle cx="17.5" cy="17.5" r="4.5" fill="#1A3A6A" stroke="white" strokeWidth="1.5" />
+        <path d="m15.5 17.5 1.5 1.5 3-3" stroke="white" strokeWidth="1.6" fill="none" />
+      </svg>
+    </div>
+  );
+}
+
+// Inline logo icon for use inside buttons/links on dark backgrounds
+function LogoIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size} height={size}
+      viewBox="0 0 24 24" fill="none"
+      stroke="white" strokeWidth="1.7"
+      strokeLinecap="round" strokeLinejoin="round"
+      style={{ flexShrink: 0 }}
+      aria-hidden="true"
+    >
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+      <circle cx="17.5" cy="17.5" r="4.5" fill="#1A3A6A" stroke="white" strokeWidth="1.5" />
+      <path d="m15.5 17.5 1.5 1.5 3-3" stroke="white" strokeWidth="1.6" fill="none" />
+    </svg>
+  );
+}
+
 export default function MethodologyPage() {
   return (
     <main style={{ background: T.parchment, minHeight: "100vh", fontFamily: T.sans }}>
@@ -155,12 +199,15 @@ export default function MethodologyPage() {
         position: "sticky", top: 0, zIndex: 100,
       }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <div style={{ width: 36, height: 36, background: T.blue, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📖</div>
+          <LogoMark />
           <span style={{ fontFamily: T.serif, fontSize: 20, color: T.ink, fontWeight: 600 }}>
             Is it in the <em style={{ color: T.blue }}>Bible?</em>
           </span>
         </Link>
-        <Link href="/" style={{ padding: "8px 18px", borderRadius: 8, background: T.blue, color: "white", textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
+        <Link href="/" style={{
+          padding: "8px 18px", borderRadius: 8, background: T.blue,
+          color: "white", textDecoration: "none", fontSize: 13, fontWeight: 600,
+        }}>
           Search
         </Link>
       </nav>
@@ -196,7 +243,9 @@ export default function MethodologyPage() {
         <h2 style={{ fontFamily: T.serif, fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 400, color: T.ink, letterSpacing: "-.5px", marginBottom: 24 }}>
           The World English Bible
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 32 }}>
+
+        {/* ✅ Fixed: responsive auto-fit grid instead of rigid 1fr 1fr */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20, marginBottom: 32 }}>
           {[
             { label: "Modern language", detail: "Written in clear, contemporary English — not King James-era prose." },
             { label: "Public domain", detail: "No copyright restrictions. Anyone can read, quote, and share freely." },
@@ -356,7 +405,11 @@ export default function MethodologyPage() {
             { icon: "⚠️", text: "We use one translation (WEB). Some nuances differ across translations — our verdicts reflect WEB specifically." },
             { icon: "⚠️", text: "Complex doctrinal questions often have legitimate scholarly debate. Our classifications reflect the most defensible academic position, not a final word." },
           ].map((item, i) => (
-            <div key={i} style={{ display: "flex", gap: 14, padding: "16px 18px", borderRadius: 12, background: item.icon === "✅" ? T.greenLt : "#FFFBEB", border: `1px solid ${item.icon === "✅" ? "#A8D4B8" : "#E8D898"}` }}>
+            <div key={i} style={{
+              display: "flex", gap: 14, padding: "16px 18px", borderRadius: 12,
+              background: item.icon === "✅" ? T.greenLt : "#FFFBEB",
+              border: `1px solid ${item.icon === "✅" ? "#A8D4B8" : "#E8D898"}`,
+            }}>
               <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
               <p style={{ fontFamily: T.serif, fontSize: 15, lineHeight: 1.6, color: T.inkMid, margin: 0 }}>{item.text}</p>
             </div>
@@ -375,17 +428,24 @@ export default function MethodologyPage() {
           color: "white", textDecoration: "none",
           fontFamily: T.sans, fontSize: 15, fontWeight: 700,
         }}>
-          📖 Try a Search
+          <LogoIcon size={16} /> Try a Search
         </Link>
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ background: T.parchmentDark, borderTop: `1px solid ${T.inkFt}`, padding: "24px", textAlign: "center" }}>
+      <footer style={{
+        background: T.parchmentDark,
+        borderTop: `1px solid ${T.inkFt}`,
+        padding: "24px",
+        textAlign: "center",
+      }}>
         <p style={{ fontFamily: T.mono, fontSize: 11, color: T.inkLt, margin: 0, letterSpacing: ".06em" }}>
           © {new Date().getFullYear()} Is it in the Bible? · Built by Anthony Kariuki ·{" "}
           <Link href="/about" style={{ color: T.inkLt }}>About</Link>
           {" · "}
           <Link href="/privacy" style={{ color: T.inkLt }}>Privacy Policy</Link>
+          {" · "}
+          <Link href="/#browse-topics" style={{ color: T.inkLt }}>Browse Topics</Link>
         </p>
       </footer>
 
