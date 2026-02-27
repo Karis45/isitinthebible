@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { TOPICS, getTopicBySlug } from "@/app/topic/topics";
 
+export const revalidate = 86400; // Cache for 24 hours, regenerate on next visit
 const SITE_URL = "https://isitinthebible.vercel.app";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 
@@ -108,8 +109,9 @@ Use this exact structure:
 
 // ─── Static generation ────────────────────────────────────────────────────────
 export async function generateStaticParams() {
-  return TOPICS.map((t) => ({ slug: t.slug }));
+  return []; // Don't pre-build at deploy time — generate on first visit instead
 }
+
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 export async function generateMetadata(
