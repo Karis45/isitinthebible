@@ -4,6 +4,7 @@
 
 import type { Metadata } from "next";
 import HomeClient from "@/app/HomeClient";
+
 // ─── Types (shared with API route) ────────────────────────────────────────────
 type Classification =
   | "Directly Stated"
@@ -31,7 +32,7 @@ interface BibleResult {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const SITE_URL  = "https://isitinthebible.com";
+const SITE_URL  = "https://isitinthebible.org";
 const SITE_NAME = "Is it in the Bible?";
 const SITE_DESC =
   "AI-powered biblical fact-checker. Type any phrase, doctrine, or belief and find out exactly what Scripture says — with the actual verses to back it up.";
@@ -45,17 +46,13 @@ const VERDICT_LABELS: Record<Classification, string> = {
   "Church Tradition": "⛪ Church Tradition — not in Scripture",
 };
 
-// ─── Server-side result fetcher ────────────────────────────────────────────────
-// Called at request time only when ?q= is present.
-// Re-uses the same Gemini logic as the API route by hitting the internal endpoint.
-// On failure we return null — the client will re-fetch on mount.
+// ─── Server-side result fetcher ───────────────────────────────────────────────
 async function fetchResult(query: string): Promise<BibleResult | null> {
   try {
     const res = await fetch(`${SITE_URL}/api/analyze`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({ statement: query }),
-      // Next.js cache: revalidate every 24 h so repeated ?q= requests are fast
       next: { revalidate: 86400 },
     });
     if (!res.ok) return null;
@@ -75,7 +72,7 @@ export async function generateMetadata({
   const params = await searchParams;
   const query  = params?.q?.trim() ?? "";
 
-  // ── No query → return site defaults (layout.tsx handles the base) ──────────
+  // ── No query → site defaults ──────────────────────────────────────────────
   if (!query) {
     return {
       title:       SITE_NAME,
@@ -84,14 +81,7 @@ export async function generateMetadata({
         title:       SITE_NAME,
         description: SITE_DESC,
         url:         SITE_URL,
-        images: [
-          {
-            url:    `${SITE_URL}/api/og`,
-            width:  1200,
-            height: 630,
-            alt:    SITE_NAME,
-          },
-        ],
+        images: [{ url: `${SITE_URL}/api/og`, width: 1200, height: 630, alt: SITE_NAME }],
       },
       twitter: {
         card:        "summary_large_image",
@@ -103,10 +93,10 @@ export async function generateMetadata({
     };
   }
 
-  // ── Query present → fetch result for rich metadata ─────────────────────────
+  // ── Query present → fetch result for rich metadata ────────────────────────
   const result = await fetchResult(query);
 
-  const title       = result
+  const title = result
     ? `${query} — ${VERDICT_LABELS[result.classification]}`
     : `"${query}" — Is it in the Bible?`;
 
@@ -114,10 +104,18 @@ export async function generateMetadata({
     ? `${result.oneLiner} Verdict: ${VERDICT_LABELS[result.classification]}. Analyzed against all 31,102 Bible verses.`
     : `Find out if "${query}" is in the Bible. AI-powered analysis of all 31,102 Bible verses.`;
 
-  const ogImageUrl = `${SITE_URL}/api/og?q=${encodeURIComponent(query)}${
-    result ? `&c=${encodeURIComponent(result.classification)}&s=${result.explicitnessScore}&v=${encodeURIComponent(result.oneLiner)}` : ""
-  }`;
+  // Build OG image URL — only pass clean one-liner, truncated to 100 chars
+  const oneLinerClean = result
+    ? result.oneLiner.slice(0, 100)
+    : "";
 
+  const ogParams = new URLSearchParams({ q: query });
+  if (result) {
+    ogParams.set("c", result.classification);
+    ogParams.set("s", String(result.explicitnessScore));
+    ogParams.set("v", oneLinerClean);
+  }
+  const ogImageUrl   = `${SITE_URL}/api/og?${ogParams.toString()}`;
   const canonicalUrl = `${SITE_URL}?q=${encodeURIComponent(query)}`;
 
   return {
@@ -127,14 +125,7 @@ export async function generateMetadata({
       title,
       description,
       url: canonicalUrl,
-      images: [
-        {
-          url:    ogImageUrl,
-          width:  1200,
-          height: 630,
-          alt:    title,
-        },
-      ],
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card:        "summary_large_image",
@@ -155,8 +146,6 @@ export default async function Page({
   const params = await searchParams;
   const query  = params?.q?.trim() ?? "";
 
-  // Pre-fetch on the server so the modal opens instantly (no loading state)
-  // when someone arrives via a shared link.
   const prefetchedResult = query ? await fetchResult(query) : null;
 
   return (
