@@ -1,6 +1,7 @@
 // app/topic/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
+import { TOPICS, getTopicBySlug } from "@/app/topic/topics";
 
 const SITE_URL = "https://isitinthebible.vercel.app";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
@@ -31,22 +32,7 @@ interface BibleResult {
   relatedTopics: { query: string; classification: Classification }[];
 }
 
-// ─── Topics data ─────────────────────────────────────────────────────────────
-interface Topic {
-  query: string;
-  slug: string;
-}
-
-const TOPICS: Topic[] = [
-  // Add your topics here
-  // Example: { query: "God helps those who help themselves", slug: "god-helps-those-who-help-themselves" }
-];
-
-function getTopicBySlug(slug: string): Topic | undefined {
-  return TOPICS.find((t) => t.slug === slug);
-}
-
-// ─── Badge config (duplicated here so page is self-contained) ─────────────────
+// ─── Badge config ─────────────────────────────────────────────────────────────
 const BADGE: Record<Classification, { bg: string; text: string; border: string; icon: string; label: string }> = {
   "Directly Stated":  { bg: "#EBF5EF", text: "#1A5C38", border: "#A8D4B8", icon: "📖", label: "Directly Stated"  },
   "Concept Present":  { bg: "#F5ECD2", text: "#7A5A00", border: "#D4B870", icon: "💡", label: "Concept Present"  },
