@@ -135,16 +135,9 @@ function ClassChip({ classification, small }: { classification: string; small?: 
   );
 }
 
-// ─── Ad slots ─────────────────────────────────────────────────────────────────
+// ─── Ad slots — hidden until AdSense is approved ──────────────────────────────
 function AdLeaderboard({ id = "ad" }: { id?: string }) {
-  return (
-    <div className="ad-leaderboard" role="complementary" aria-label="Advertisement" data-ad-slot={id}>
-      <span className="ad-label">Sponsored</span>
-      <div style={{ width: "100%", minHeight: 60, background: "#D8D0C4", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontFamily: T.mono, fontSize: 11, color: T.inkLt, fontStyle: "italic" }}>Ad · Responsive</span>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -755,10 +748,6 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
       <main id="main-content">
         <HeroSection onSearch={handleSearch} pending={pending} />
 
-        <div style={{ background: T.parchmentDark, borderBottom: `1px solid ${T.inkFt}`, padding: "12px 24px", display: "flex", justifyContent: "center" }}>
-          <AdLeaderboard id="ad-top" />
-        </div>
-
         <StatsStrip />
 
         {error && (
@@ -777,10 +766,8 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
         />
 
         <HowItWorks />
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 16px" }}><AdLeaderboard id="ad-mid" /></div>
         <ClassificationLegend />
         <TrendingTopics onSearch={handleSearch} />
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 16px" }}><AdLeaderboard id="ad-trending" /></div>
         <MisquotesSection onSearch={handleSearch} />
         <TestimonialsSection />
         <CTABanner onSearch={handleSearch} />
