@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Navy rounded background -->
+  <rect width="32" height="32" rx="7" fill="#1A3A6A"/>
+
+  <!-- Open book pages -->
+  <!-- Left page -->
+  <path d="M7 10 C7 10 11 10.5 13.5 12 L13.5 22 C11 20.8 7 20.5 7 20.5 Z" fill="none" stroke="#F5F1E8" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- Right page -->
+  <path d="M25 10 C25 10 21 10.5 18.5 12 L18.5 22 C21 20.8 25 20.5 25 20.5 Z" fill="none" stroke="#F5F1E8" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- Spine -->
+  <line x1="16" y1="11.5" x2="16" y2="22" stroke="#F5F1E8" stroke-width="1.2"/>
+
+  <!-- Checkmark (green, bottom right) -->
+  <circle cx="22" cy="22" r="5.5" fill="#1A5C38"/>
+  <polyline points="19.2,22 21.2,24 24.8,20" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
