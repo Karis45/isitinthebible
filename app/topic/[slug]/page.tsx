@@ -3,26 +3,6 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { TOPICS, getTopicBySlug } from "@/app/topic/topics";
 
-// ─── Extract JSON safely from text with thinking blocks ────────────────────────
-function extractJSON(text: string): string {
-  // Remove thinking blocks
-  text = text.replace(/<thinking>[\s\S]*?<\/thinking>/g, "");
-  
-  // Remove markdown code fences
-  text = text.replace(/```json[\s\S]*?```/g, "");
-  text = text.replace(/```[\s\S]*?```/g, "");
-  
-  // Find the first { and last }
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  
-  if (start === -1 || end === -1 || start >= end) {
-    throw new Error("No valid JSON found in response");
-  }
-  
-  return text.slice(start, end + 1);
-}
-
 const SITE_URL = "https://isitinthebible.vercel.app";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 
@@ -61,6 +41,24 @@ const BADGE: Record<Classification, { bg: string; text: string; border: string; 
   "Church Tradition": { bg: "#F3EEF8", text: "#4A1A7A", border: "#C8A8E8", icon: "⛪", label: "Church Tradition" },
 };
 
+// ─── Helper functions ─────────────────────────────────────────────────────────
+function extractJSON(text: string): string {
+  let braceCount = 0;
+  let startIdx = -1;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === "{") {
+      if (braceCount === 0) startIdx = i;
+      braceCount++;
+    } else if (text[i] === "}") {
+      braceCount--;
+      if (braceCount === 0 && startIdx !== -1) {
+        return text.substring(startIdx, i + 1);
+      }
+    }
+  }
+  return text;
+}
+
 // ─── Data fetching ────────────────────────────────────────────────────────────
 async function fetchResult(query: string): Promise<BibleResult | null> {
   try {
@@ -93,13 +91,12 @@ Use this exact structure:
       generationConfig: { temperature: 0.3, maxOutputTokens: 4096, responseMimeType: "application/json" },
     });
 
-    const raw = (await model.generateContent(`${SYSTEM_PROMPT}\n\nAnalyze: "${query}"`)).response.text();
+    const result = await model.generateContent(`${SYSTEM_PROMPT}\n\nAnalyze: "${query}"`);
+    const raw = result.response.text();
 
-    // ✅ Use shared extractJSON — safely handles thinking blocks and markdown
-    //    fences. The old approach (raw.lastIndexOf("}")) was corrupted by brace
-    //    characters inside <thinking>…</thinking> blocks, which caused the
-    //    JSON parse failures seen during static generation for topics like
-    //    Soul Sleep, Karma, Manifesting, and Hell.
+    // ✅ Fixed: use brace-depth extractJSON instead of naive lastIndexOf("}")
+    // The old approach broke on gemini-2.5-flash thinking blocks which contain
+    // their own { } characters, corrupting the JSON slice.
     const parsed: BibleResult = JSON.parse(extractJSON(raw));
     parsed.explicitnessScore = Math.max(1, Math.min(5, Math.round(parsed.explicitnessScore)));
     return parsed;

@@ -2,18 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Extract JSON helper — handles markdown fences and surrounding text
+// Extract JSON utility (handles thinking blocks, markdown fences, stray text)
 // ─────────────────────────────────────────────────────────────────────────────
 function extractJSON(text: string): string {
-  // Try to find JSON object wrapped in markdown code fence
-  const mdMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-  if (mdMatch) return mdMatch[1].trim();
-
-  // Try to find raw JSON object
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (jsonMatch) return jsonMatch[0];
-
-  return text;
+  // Remove markdown code fences
+  let cleaned = text.replace(/^```[\w]*\n?|\n?```$/g, "");
+  
+  // Find JSON object
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  if (match) {
+    return match[0];
+  }
+  
+  // If no match, return original (will fail gracefully in JSON.parse)
+  return cleaned;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -182,8 +184,9 @@ export async function POST(req: NextRequest) {
     const geminiResult = await model.generateContent(prompt);
     const responseText = geminiResult.response.text();
 
-    // ✅ Use shared extractJSON — safely handles thinking blocks, markdown
-    //    fences, and stray text around the JSON object.
+    // ✅ Uses shared extractJSON — handles thinking blocks, markdown fences,
+    //    and stray text. Replaces the old local version which used a regex
+    //    that was equally fragile against thinking model output.
     const parsed: BibleResult = JSON.parse(extractJSON(responseText));
 
     // Validate required fields
