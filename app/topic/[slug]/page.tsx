@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { TOPICS, getTopicBySlug } from "@/app/topic/topics";
 
-export const revalidate = 86400; // Cache for 24 hours, regenerate on next visit
+export const revalidate = 86400; // Cache pages for 24 hours
+
 const SITE_URL = "https://isitinthebible.vercel.app";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 
@@ -41,25 +42,24 @@ const BADGE: Record<Classification, { bg: string; text: string; border: string; 
   "Cultural":         { bg: "#FEF0F0", text: "#7A1A1A", border: "#E8BEBE", icon: "❌", label: "Not in the Bible" },
   "Church Tradition": { bg: "#F3EEF8", text: "#4A1A7A", border: "#C8A8E8", icon: "⛪", label: "Church Tradition" },
 };
-
-// ─── Helper functions ─────────────────────────────────────────────────────────
-function extractJSON(text: string): string {
-  let braceCount = 0;
-  let startIdx = -1;
-  for (let i = 0; i < text.length; i++) {
-    if (text[i] === "{") {
-      if (braceCount === 0) startIdx = i;
-      braceCount++;
-    } else if (text[i] === "}") {
-      braceCount--;
-      if (braceCount === 0 && startIdx !== -1) {
-        return text.substring(startIdx, i + 1);
-      }
-    }
+function extractJSON(raw: string): string {
+  let text = raw.replace(/<thinking>[\s\S]*?<\/thinking>/gi, "").trim();
+  text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+  const start = text.indexOf("{");
+  if (start === -1) throw new SyntaxError("No JSON found");
+  let depth = 0, end = -1, inString = false, escape = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (escape) { escape = false; continue; }
+    if (ch === "\\" && inString) { escape = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === "{") depth++;
+    else if (ch === "}" && --depth === 0) { end = i; break; }
   }
-  return text;
+  if (end === -1) throw new SyntaxError("Incomplete JSON");
+  return text.slice(start, end + 1);
 }
-
 // ─── Data fetching ────────────────────────────────────────────────────────────
 async function fetchResult(query: string): Promise<BibleResult | null> {
   try {
@@ -95,9 +95,6 @@ Use this exact structure:
     const result = await model.generateContent(`${SYSTEM_PROMPT}\n\nAnalyze: "${query}"`);
     const raw = result.response.text();
 
-    // ✅ Fixed: use brace-depth extractJSON instead of naive lastIndexOf("}")
-    // The old approach broke on gemini-2.5-flash thinking blocks which contain
-    // their own { } characters, corrupting the JSON slice.
     const parsed: BibleResult = JSON.parse(extractJSON(raw));
     parsed.explicitnessScore = Math.max(1, Math.min(5, Math.round(parsed.explicitnessScore)));
     return parsed;
@@ -107,11 +104,10 @@ Use this exact structure:
   }
 }
 
-// ─── Static generation ────────────────────────────────────────────────────────
+// ─── Static generation — empty so no AI calls happen at build time ────────────
 export async function generateStaticParams() {
-  return []; // Don't pre-build at deploy time — generate on first visit instead
+  return [];
 }
-
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 export async function generateMetadata(
@@ -168,7 +164,6 @@ export default async function TopicPage(
     return "#5CC88A";
   };
 
-  // JSON-LD structured data
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -213,20 +208,17 @@ export default async function TopicPage(
         <div style={{ background: "linear-gradient(135deg, #1A3A6A 0%, #0F2347 100%)", padding: "48px 24px 40px" }}>
           <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
-            {/* Breadcrumb */}
             <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "rgba(255,255,255,.45)", marginBottom: 20, letterSpacing: ".08em" }}>
               <a href="/" style={{ color: "rgba(255,255,255,.45)", textDecoration: "none" }}>Home</a>
               {" / "}
               <span style={{ color: "rgba(255,255,255,.65)" }}>Topic</span>
             </div>
 
-            {/* Badge */}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 100, background: badge.bg, border: `1px solid ${badge.border}`, marginBottom: 20 }}>
               <span style={{ fontSize: 14 }}>{badge.icon}</span>
               <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: badge.text }}>{badge.label}</span>
             </div>
 
-            {/* Heading */}
             <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 400, color: "white", lineHeight: 1.15, letterSpacing: "-1px", marginBottom: 14 }}>
               Is &ldquo;{result.query}&rdquo; in the Bible?
             </h1>
@@ -234,7 +226,6 @@ export default async function TopicPage(
               {result.oneLiner}
             </p>
 
-            {/* Score bar */}
             <div style={{ maxWidth: 400 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "rgba(255,255,255,.4)", letterSpacing: ".1em", textTransform: "uppercase" }}>← Less Biblical</span>
@@ -250,7 +241,6 @@ export default async function TopicPage(
         {/* ── Content ── */}
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 24px" }}>
 
-          {/* Stats grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, marginBottom: 32 }}>
             {[
               { label: "Origin Era",            value: result.originEra            },
@@ -265,7 +255,6 @@ export default async function TopicPage(
             ))}
           </div>
 
-          {/* Common claim vs reality */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 32 }}>
             <div style={{ padding: 18, borderRadius: 12, background: "#FEF0F0", border: "1px solid #E8BEBE" }}>
               <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "#7A1A1A", marginBottom: 10 }}>❌ Common Claim</div>
@@ -277,7 +266,6 @@ export default async function TopicPage(
             </div>
           </div>
 
-          {/* Verses */}
           {result.verses.length > 0 && (
             <section style={{ marginBottom: 32 }}>
               <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 400, color: "#1A1612", marginBottom: 16, letterSpacing: "-.3px" }}>
@@ -299,7 +287,6 @@ export default async function TopicPage(
             </section>
           )}
 
-          {/* Analysis */}
           <section style={{ marginBottom: 32 }}>
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 400, color: "#1A1612", marginBottom: 16, letterSpacing: "-.3px" }}>
               Scholarly Analysis
@@ -311,7 +298,6 @@ export default async function TopicPage(
             </div>
           </section>
 
-          {/* Timeline */}
           {result.timeline.length > 0 && (
             <section style={{ marginBottom: 32 }}>
               <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 400, color: "#1A1612", marginBottom: 20, letterSpacing: "-.3px" }}>
@@ -332,7 +318,6 @@ export default async function TopicPage(
             </section>
           )}
 
-          {/* Confidence note */}
           <div style={{ padding: "14px 18px", borderRadius: 12, background: "#EEF2FA", border: "1px solid #C0D4F0", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 40 }}>
             <span style={{ fontSize: 16, flexShrink: 0 }}>🎓</span>
             <div>
@@ -341,7 +326,6 @@ export default async function TopicPage(
             </div>
           </div>
 
-          {/* Related topics */}
           {result.relatedTopics.length > 0 && (
             <section style={{ marginBottom: 40 }}>
               <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 22, fontWeight: 400, color: "#1A1612", marginBottom: 14 }}>
@@ -363,7 +347,6 @@ export default async function TopicPage(
             </section>
           )}
 
-          {/* CTA */}
           <div style={{ textAlign: "center", padding: "40px 24px", background: "linear-gradient(135deg, #1A3A6A 0%, #0F2347 100%)", borderRadius: 20 }}>
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 28, fontWeight: 300, color: "white", marginBottom: 10, letterSpacing: "-.5px" }}>
               Ask your own question
@@ -378,7 +361,6 @@ export default async function TopicPage(
 
         </div>
 
-        {/* ── Footer ── */}
         <footer style={{ background: "#1A1612", padding: "32px 24px", textAlign: "center" }}>
           <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "rgba(255,255,255,.25)", letterSpacing: ".05em", lineHeight: 1.8, margin: 0 }}>
             © {new Date().getFullYear()} IS IT IN THE BIBLE? — ALL RIGHTS RESERVED<br />

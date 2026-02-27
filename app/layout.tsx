@@ -1,17 +1,16 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Analytics } from "@vercel/analytics/react"; // ← add this
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
-const SITE_URL = "https://isitinthebible.vercel.app"; // ← update to your final domain
+const SITE_URL = "https://isitinthebible.vercel.app";
 const SITE_NAME = "Is it in the Bible?";
 const SITE_DESC =
   "AI-powered biblical fact-checker. Type any phrase, doctrine, or belief and find out exactly what Scripture says — with the actual verses to back it up.";
 
-const ADSENSE_CLIENT = "ca-pub-XXXXXXXXXXXXXXXX"; // ← fill in after AdSense approval
+const ADSENSE_CLIENT = "ca-pub-XXXXXXXXXXXXXXXX";
 
-// Default OG image — shown when sharing the homepage (no search query)
 const DEFAULT_OG = `${SITE_URL}/api/og?q=Is+it+in+the+Bible%3F&c=Cultural&s=1&v=AI-powered+biblical+fact-checker+for+31%2C000%2B+verses`;
 
 export const metadata: Metadata = {
@@ -125,7 +124,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
-        <Analytics />  {/* ← add this */}
+        <Analytics />
         {process.env.NODE_ENV === "production" && (
           <Script
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
