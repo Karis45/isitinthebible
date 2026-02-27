@@ -6,12 +6,28 @@ const SITE_URL = "https://isitinthebible.vercel.app"; // ← update to custom do
 
 // ── Font loader ──────────────────────────────────────────────────────────────
 async function loadFont(family: string, text: string, weight = 400): Promise<ArrayBuffer> {
-  const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:ital,wght@0,${weight};1,${weight}&text=${encodeURIComponent(text)}`;
-  const css = await (await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } })).text();
-  const match = css.match(/src: url\((.+?)\) format\('(opentype|truetype)'\)/);
-  if (!match) throw new Error(`Failed to load font: ${family}`);
-  const res = await fetch(match[1]);
-  if (!res.ok) throw new Error(`Failed to fetch font binary: ${family}`);
+  const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&text=${encodeURIComponent(text)}`;
+  
+  const css = await (
+    await fetch(url, {
+      headers: {
+        // This UA makes Google return TTF instead of WOFF2
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+      },
+    })
+  ).text();
+
+  // Match both opentype and truetype, with or without quotes
+  const match = css.match(/src:\s*url\((['"]?)(.+?)\1\)\s*format\(['"]?(opentype|truetype)['"]?\)/);
+  if (!match) {
+    // Log the CSS to help debug
+    console.error("Google Fonts CSS response:", css.slice(0, 500));
+    throw new Error(`Failed to parse font CSS for: ${family}`);
+  }
+
+  const fontUrl = match[2];
+  const res = await fetch(fontUrl);
+  if (!res.ok) throw new Error(`Failed to fetch font binary: ${family} — ${res.status}`);
   return res.arrayBuffer();
 }
 
