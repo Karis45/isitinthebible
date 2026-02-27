@@ -3,12 +3,15 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 
-const SITE_URL  = "https://isitinthebible.org";
+const SITE_URL  = "https://isitinthebible.org"; // ← update to your final domain
 const SITE_NAME = "Is it in the Bible?";
 const SITE_DESC =
   "AI-powered biblical fact-checker. Type any phrase, doctrine, or belief and find out exactly what Scripture says — with the actual verses to back it up.";
 
 const ADSENSE_CLIENT = "ca-pub-XXXXXXXXXXXXXXXX"; // ← fill in after AdSense approval
+
+// Default OG image — shown when sharing the homepage (no search query)
+const DEFAULT_OG = `${SITE_URL}/api/og?q=Is+it+in+the+Bible%3F&c=Cultural&s=1&v=AI-powered+biblical+fact-checker+for+31%2C000%2B+verses`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -18,13 +21,27 @@ export const metadata: Metadata = {
   },
   description: SITE_DESC,
   openGraph: {
-    type:     "website",
-    siteName: SITE_NAME,
-    locale:   "en_US",
+    type:        "website",
+    siteName:    SITE_NAME,
+    locale:      "en_US",
+    url:         SITE_URL,
+    title:       SITE_NAME,
+    description: SITE_DESC,
+    images: [
+      {
+        url:    DEFAULT_OG,
+        width:  1200,
+        height: 630,
+        alt:    "Is it in the Bible? — AI-powered biblical fact-checker",
+      },
+    ],
   },
   twitter: {
-    card: "summary_large_image",
-    site: "@isitinthebible",
+    card:        "summary_large_image",
+    site:        "@isitinthebible",
+    title:       SITE_NAME,
+    description: SITE_DESC,
+    images:      [DEFAULT_OG],
   },
   robots: {
     index:     true,
@@ -37,7 +54,7 @@ export const metadata: Metadata = {
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
-    apple: "/apple-touch-icon.png", // also in the favicon.io zip
+    apple: "/apple-touch-icon.png",
   },
 };
 
