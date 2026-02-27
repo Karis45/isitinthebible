@@ -57,7 +57,7 @@ const scoreToColor = (s: number) => {
 };
 
 // ─── Site URL ─────────────────────────────────────────────────────────────────
-const SITE_URL    = "https://isitinthebible.com";
+const SITE_URL    = "https://isitinthebible.org";
 const SITE_HANDLE = "@isitinthebible";
 
 type TabId = "verdict" | "verses" | "history" | "analysis";
