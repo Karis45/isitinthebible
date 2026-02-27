@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Rate limiter — 10 requests per minute per IP
+// ─────────────────────────────────────────────────────────────────────────────
+const rateMap = new Map<string, { count: number; reset: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateMap.get(ip);
+  if (!entry || now > entry.reset) {
+    rateMap.set(ip, { count: 1, reset: now + 60_000 });
+    return false;
+  }
+  if (entry.count >= 10) return true;
+  entry.count++;
+  return false;
+}
+
+// Prevent the map from growing indefinitely on long-running instances
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateMap.entries()) {
+    if (now > entry.reset) rateMap.delete(key);
+  }
+}, 5 * 60_000);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Types (must match page.tsx)
 // ─────────────────────────────────────────────────────────────────────────────
 type Classification =
@@ -109,6 +134,19 @@ function extractJSON(raw: string): string {
 // Route handler
 // ─────────────────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
+  // ── Rate limit ──────────────────────────────────────────────────────────────
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment and try again." },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await req.json();
     const statement: string = (body?.statement ?? "").trim();

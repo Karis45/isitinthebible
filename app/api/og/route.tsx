@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
@@ -7,20 +8,22 @@ const SITE_URL = "https://isitinthebible.vercel.app"; // ← update to custom do
 // ── Font loader ──────────────────────────────────────────────────────────────
 async function loadFont(family: string, text: string, weight = 400): Promise<ArrayBuffer> {
   const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&text=${encodeURIComponent(text)}`;
-  
+
   const css = await (
     await fetch(url, {
       headers: {
         // This UA makes Google return TTF instead of WOFF2
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
       },
     })
   ).text();
 
   // Match both opentype and truetype, with or without quotes
-  const match = css.match(/src:\s*url\((['"]?)(.+?)\1\)\s*format\(['"]?(opentype|truetype)['"]?\)/);
+  const match = css.match(
+    /src:\s*url\((['"]?)(.+?)\1\)\s*format\(['"]?(opentype|truetype)['"]?\)/
+  );
   if (!match) {
-    // Log the CSS to help debug
     console.error("Google Fonts CSS response:", css.slice(0, 500));
     throw new Error(`Failed to parse font CSS for: ${family}`);
   }
@@ -49,7 +52,7 @@ const scoreToColor = (s: number) => {
 };
 
 // ── Route ────────────────────────────────────────────────────────────────────
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q") ?? "Is it in the Bible?";
   const c = searchParams.get("c") ?? "Cultural";
@@ -58,17 +61,46 @@ export async function GET(req: Request) {
 
   const badge = BADGE[c] ?? BADGE["Cultural"];
   const barWidth = Math.round(((s - 1) / 4) * 88 + 6);
-
   const displayDomain = SITE_URL.replace("https://", "");
 
-  const allText = `Is it in the Bible? ${q} ${v} ${badge.label} Biblical Score AI-POWERED BIBLICAL FACT-CHECKER · WORLD ENGLISH BIBLE ${displayDomain}`;
+  // Deduplicate characters for font subsetting — keeps font fetches small
+  const allText = [
+    "Is it in the Bible?",
+    q,
+    v,
+    badge.label,
+    "Biblical Score AI-POWERED BIBLICAL FACT-CHECKER · WORLD ENGLISH BIBLE",
+    displayDomain,
+    `${s} / 5`,
+  ]
+    .join(" ")
+    .split("")
+    .filter((ch, i, a) => a.indexOf(ch) === i)
+    .join("");
 
-  const [cormorantData, cormorantItalicData, dmSansData, dmMonoData] = await Promise.all([
-    loadFont("Cormorant+Garamond", allText, 400),
-    loadFont("Cormorant+Garamond", allText, 600),
-    loadFont("DM+Sans",            allText, 500),
-    loadFont("DM+Mono",            allText, 400),
-  ]);
+  // Load fonts in parallel; fall back gracefully if any fail
+  let cormorantData: ArrayBuffer | null = null;
+  let cormorantSemiBoldData: ArrayBuffer | null = null;
+  let dmSansData: ArrayBuffer | null = null;
+  let dmMonoData: ArrayBuffer | null = null;
+
+  try {
+    [cormorantData, cormorantSemiBoldData, dmSansData, dmMonoData] = await Promise.all([
+      loadFont("Cormorant+Garamond", allText, 400),
+      loadFont("Cormorant+Garamond", allText, 600),
+      loadFont("DM+Sans",            allText, 500),
+      loadFont("DM+Mono",            allText, 400),
+    ]);
+  } catch (err) {
+    console.error("OG font load error:", err);
+    // Continue — ImageResponse will fall back to system fonts
+  }
+
+  const fonts: { name: string; data: ArrayBuffer; style: "normal" | "italic"; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 }[] = [];
+  if (cormorantData)         fonts.push({ name: "Cormorant Garamond", data: cormorantData,         style: "normal", weight: 400 });
+  if (cormorantSemiBoldData) fonts.push({ name: "Cormorant Garamond", data: cormorantSemiBoldData, style: "italic", weight: 600 });
+  if (dmSansData)            fonts.push({ name: "DM Sans",            data: dmSansData,            style: "normal", weight: 500 });
+  if (dmMonoData)            fonts.push({ name: "DM Mono",            data: dmMonoData,            style: "normal", weight: 400 });
 
   return new ImageResponse(
     (
@@ -142,7 +174,6 @@ export async function GET(req: Request) {
               </em>
             </span>
           </div>
-          {/* Domain — updates automatically from SITE_URL */}
           <span
             style={{
               color: "rgba(255,255,255,.5)",
@@ -298,12 +329,7 @@ export async function GET(req: Request) {
     {
       width: 1200,
       height: 630,
-      fonts: [
-        { name: "Cormorant Garamond", data: cormorantData,       style: "normal", weight: 400 },
-        { name: "Cormorant Garamond", data: cormorantItalicData, style: "italic", weight: 600 },
-        { name: "DM Sans",            data: dmSansData,          style: "normal", weight: 500 },
-        { name: "DM Mono",            data: dmMonoData,          style: "normal", weight: 400 },
-      ],
+      fonts,
     }
   );
 }
