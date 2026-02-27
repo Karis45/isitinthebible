@@ -3,6 +3,26 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { TOPICS, getTopicBySlug } from "@/app/topic/topics";
 
+// ─── Extract JSON safely from text with thinking blocks ────────────────────────
+function extractJSON(text: string): string {
+  // Remove thinking blocks
+  text = text.replace(/<thinking>[\s\S]*?<\/thinking>/g, "");
+  
+  // Remove markdown code fences
+  text = text.replace(/```json[\s\S]*?```/g, "");
+  text = text.replace(/```[\s\S]*?```/g, "");
+  
+  // Find the first { and last }
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  
+  if (start === -1 || end === -1 || start >= end) {
+    throw new Error("No valid JSON found in response");
+  }
+  
+  return text.slice(start, end + 1);
+}
+
 const SITE_URL = "https://isitinthebible.vercel.app";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 
@@ -73,14 +93,14 @@ Use this exact structure:
       generationConfig: { temperature: 0.3, maxOutputTokens: 4096, responseMimeType: "application/json" },
     });
 
-    const result = await model.generateContent(`${SYSTEM_PROMPT}\n\nAnalyze: "${query}"`);
-    const raw = result.response.text();
+    const raw = (await model.generateContent(`${SYSTEM_PROMPT}\n\nAnalyze: "${query}"`)).response.text();
 
-    const start = raw.indexOf("{");
-    const end = raw.lastIndexOf("}");
-    if (start === -1 || end === -1) return null;
-
-    const parsed: BibleResult = JSON.parse(raw.slice(start, end + 1));
+    // ✅ Use shared extractJSON — safely handles thinking blocks and markdown
+    //    fences. The old approach (raw.lastIndexOf("}")) was corrupted by brace
+    //    characters inside <thinking>…</thinking> blocks, which caused the
+    //    JSON parse failures seen during static generation for topics like
+    //    Soul Sleep, Karma, Manifesting, and Hell.
+    const parsed: BibleResult = JSON.parse(extractJSON(raw));
     parsed.explicitnessScore = Math.max(1, Math.min(5, Math.round(parsed.explicitnessScore)));
     return parsed;
   } catch (e) {

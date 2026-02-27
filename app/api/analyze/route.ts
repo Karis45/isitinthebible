@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Extract JSON helper — handles markdown fences and surrounding text
+// ─────────────────────────────────────────────────────────────────────────────
+function extractJSON(text: string): string {
+  // Try to find JSON object wrapped in markdown code fence
+  const mdMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+  if (mdMatch) return mdMatch[1].trim();
+
+  // Try to find raw JSON object
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (jsonMatch) return jsonMatch[0];
+
+  return text;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Rate limiter — 10 requests per minute per IP
 // ─────────────────────────────────────────────────────────────────────────────
 const rateMap = new Map<string, { count: number; reset: number }>();
@@ -111,26 +126,6 @@ Include 3–5 related topics.
 Important: Be academically rigorous, non-denominational, and non-partisan. Report what the text says, not what any denomination prefers.`;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Robust JSON extractor — handles thinking models, markdown fences, stray text
-// ─────────────────────────────────────────────────────────────────────────────
-function extractJSON(raw: string): string {
-  // 1. Strip thinking/reasoning blocks that some models prepend
-  let text = raw.replace(/<thinking>[\s\S]*?<\/thinking>/gi, "").trim();
-
-  // 2. Strip markdown fences: ```json ... ``` or ``` ... ```
-  text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
-
-  // 3. Find the outermost { } to isolate just the JSON object
-  const start = text.indexOf("{");
-  const end   = text.lastIndexOf("}");
-  if (start === -1 || end === -1 || end < start) {
-    throw new SyntaxError("No JSON object found in model response");
-  }
-
-  return text.slice(start, end + 1);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Route handler
 // ─────────────────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
@@ -172,7 +167,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // gemini-2.5-flash — current stable free-tier model (2.0-flash deprecated Feb 2026)
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       generationConfig: {
@@ -188,8 +182,9 @@ export async function POST(req: NextRequest) {
     const geminiResult = await model.generateContent(prompt);
     const responseText = geminiResult.response.text();
 
-    const cleaned = extractJSON(responseText);
-    const parsed: BibleResult = JSON.parse(cleaned);
+    // ✅ Use shared extractJSON — safely handles thinking blocks, markdown
+    //    fences, and stray text around the JSON object.
+    const parsed: BibleResult = JSON.parse(extractJSON(responseText));
 
     // Validate required fields
     const required: (keyof BibleResult)[] = [
