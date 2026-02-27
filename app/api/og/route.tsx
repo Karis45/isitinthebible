@@ -2,6 +2,18 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 
+// ── Font loader — fetches subset from Google Fonts (edge-safe) ──────────────
+async function loadFont(family: string, text: string, weight = 400): Promise<ArrayBuffer> {
+  const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:ital,wght@0,${weight};1,${weight}&text=${encodeURIComponent(text)}`;
+  const css = await (await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } })).text();
+  const match = css.match(/src: url\((.+?)\) format\('(opentype|truetype)'\)/);
+  if (!match) throw new Error(`Failed to load font: ${family}`);
+  const res = await fetch(match[1]);
+  if (!res.ok) throw new Error(`Failed to fetch font binary: ${family}`);
+  return res.arrayBuffer();
+}
+
+// ── Types ────────────────────────────────────────────────────────────────────
 const BADGE: Record<string, { label: string; icon: string; color: string; bg: string }> = {
   "Directly Stated":  { label: "Directly Stated",  icon: "📖", color: "#1A5C38", bg: "#EBF5EF" },
   "Concept Present":  { label: "Concept Present",  icon: "💡", color: "#7A5A00", bg: "#F5ECD2" },
@@ -18,6 +30,7 @@ const scoreToColor = (s: number) => {
   return "#5CC88A";
 };
 
+// ── Route ────────────────────────────────────────────────────────────────────
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q") ?? "Is it in the Bible?";
@@ -28,6 +41,17 @@ export async function GET(req: Request) {
   const badge = BADGE[c] ?? BADGE["Cultural"];
   const barWidth = Math.round(((s - 1) / 4) * 88 + 6);
 
+  // Build the full text corpus so Google Fonts only sends the glyphs we need
+  const allText = `Is it in the Bible? ${q} ${v} ${badge.label} Biblical Score AI-POWERED BIBLICAL FACT-CHECKER · WORLD ENGLISH BIBLE isitinthebible.com`;
+
+  // Load all three fonts in parallel
+  const [cormorantData, cormorantItalicData, dmSansData, dmMonoData] = await Promise.all([
+    loadFont("Cormorant+Garamond", allText, 400),
+    loadFont("Cormorant+Garamond", allText, 600),
+    loadFont("DM+Sans", allText, 500),
+    loadFont("DM+Mono", allText, 400),
+  ]);
+
   return new ImageResponse(
     (
       <div
@@ -37,12 +61,12 @@ export async function GET(req: Request) {
           display: "flex",
           flexDirection: "column",
           background: "#F5F1E8",
-          fontFamily: "Georgia, serif",
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* ── Parchment texture lines ── */}
+        {/* Parchment texture lines */}
         {[...Array(18)].map((_, i) => (
           <div
             key={i}
@@ -58,7 +82,7 @@ export async function GET(req: Request) {
           />
         ))}
 
-        {/* ── Top navy bar ── */}
+        {/* Top navy bar */}
         <div
           style={{
             display: "flex",
@@ -71,7 +95,6 @@ export async function GET(req: Request) {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            {/* Book icon */}
             <div
               style={{
                 width: 36,
@@ -86,16 +109,37 @@ export async function GET(req: Request) {
             >
               📖
             </div>
-            <span style={{ color: "white", fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px" }}>
-              Is it in the Bible?
+            {/* DM Sans for the site name UI text */}
+            <span
+              style={{
+                color: "white",
+                fontSize: 22,
+                fontWeight: 500,
+                letterSpacing: "-0.5px",
+                fontFamily: "'DM Sans'",
+              }}
+            >
+              Is it in the{" "}
+              <em style={{ fontStyle: "italic", fontFamily: "'Cormorant Garamond'" }}>
+                Bible?
+              </em>
             </span>
           </div>
-          <span style={{ color: "rgba(255,255,255,.5)", fontSize: 14, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-            isitinthebible.org
+          {/* DM Mono for the domain */}
+          <span
+            style={{
+              color: "rgba(255,255,255,.5)",
+              fontSize: 13,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              fontFamily: "'DM Mono'",
+            }}
+          >
+            isitinthebible.com
           </span>
         </div>
 
-        {/* ── Main content ── */}
+        {/* Main content */}
         <div
           style={{
             display: "flex",
@@ -104,7 +148,7 @@ export async function GET(req: Request) {
             padding: "48px 60px 40px",
           }}
         >
-          {/* Badge */}
+          {/* Classification badge — DM Mono label */}
           <div
             style={{
               display: "flex",
@@ -122,18 +166,18 @@ export async function GET(req: Request) {
             <span
               style={{
                 color: badge.color,
-                fontSize: 15,
-                fontWeight: 700,
-                letterSpacing: "0.08em",
+                fontSize: 14,
+                fontWeight: 400,
+                letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                fontFamily: "monospace",
+                fontFamily: "'DM Mono'",
               }}
             >
               {badge.label}
             </span>
           </div>
 
-          {/* Query */}
+          {/* Query — Cormorant Garamond, the hero text */}
           <div
             style={{
               fontSize: q.length > 50 ? 42 : q.length > 30 ? 52 : 62,
@@ -143,21 +187,23 @@ export async function GET(req: Request) {
               letterSpacing: "-1px",
               marginBottom: 20,
               maxWidth: 900,
+              fontFamily: "'Cormorant Garamond'",
             }}
           >
             {q}
           </div>
 
-          {/* One-liner */}
+          {/* One-liner — Cormorant italic */}
           {v && (
             <div
               style={{
                 fontSize: 22,
+                fontStyle: "italic",
                 color: "#4A3F35",
                 lineHeight: 1.5,
                 maxWidth: 820,
                 marginBottom: 32,
-                fontStyle: "italic",
+                fontFamily: "'Cormorant Garamond'",
               }}
             >
               {v.length > 120 ? v.slice(0, 120) + "…" : v}
@@ -167,10 +213,18 @@ export async function GET(req: Request) {
           {/* Score bar */}
           <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: 400 }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 12, color: "#8A7D72", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "monospace" }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  color: "#8A7D72",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  fontFamily: "'DM Mono'",
+                }}
+              >
                 Biblical Score
               </span>
-              <span style={{ fontSize: 12, color: "#8A7D72", fontFamily: "monospace" }}>
+              <span style={{ fontSize: 11, color: "#8A7D72", fontFamily: "'DM Mono'" }}>
                 {s} / 5
               </span>
             </div>
@@ -199,7 +253,7 @@ export async function GET(req: Request) {
           </div>
         </div>
 
-        {/* ── Bottom strip ── */}
+        {/* Bottom strip — DM Mono */}
         <div
           style={{
             display: "flex",
@@ -211,7 +265,14 @@ export async function GET(req: Request) {
             flexShrink: 0,
           }}
         >
-          <span style={{ fontSize: 14, color: "#8A7D72", letterSpacing: "0.06em" }}>
+          <span
+            style={{
+              fontSize: 12,
+              color: "#8A7D72",
+              letterSpacing: "0.08em",
+              fontFamily: "'DM Mono'",
+            }}
+          >
             AI-POWERED BIBLICAL FACT-CHECKER · WORLD ENGLISH BIBLE
           </span>
         </div>
@@ -220,6 +281,12 @@ export async function GET(req: Request) {
     {
       width: 1200,
       height: 630,
+      fonts: [
+        { name: "Cormorant Garamond", data: cormorantData,       style: "normal", weight: 400 },
+        { name: "Cormorant Garamond", data: cormorantItalicData, style: "italic", weight: 600 },
+        { name: "DM Sans",            data: dmSansData,          style: "normal", weight: 500 },
+        { name: "DM Mono",            data: dmMonoData,          style: "normal", weight: 400 },
+      ],
     }
   );
 }
