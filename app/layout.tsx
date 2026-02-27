@@ -4,7 +4,7 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react"; // ← add this
 import "./globals.css";
 
-const SITE_URL  = "https://isitinthebible.org"; // ← update to your final domain
+const SITE_URL = "https://isitinthebible.vercel.app"; // ← update to your final domain
 const SITE_NAME = "Is it in the Bible?";
 const SITE_DESC =
   "AI-powered biblical fact-checker. Type any phrase, doctrine, or belief and find out exactly what Scripture says — with the actual verses to back it up.";

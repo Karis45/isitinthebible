@@ -2,7 +2,9 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 
-// ── Font loader — fetches subset from Google Fonts (edge-safe) ──────────────
+const SITE_URL = "https://isitinthebible.vercel.app"; // ← update to custom domain later
+
+// ── Font loader ──────────────────────────────────────────────────────────────
 async function loadFont(family: string, text: string, weight = 400): Promise<ArrayBuffer> {
   const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:ital,wght@0,${weight};1,${weight}&text=${encodeURIComponent(text)}`;
   const css = await (await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } })).text();
@@ -13,7 +15,7 @@ async function loadFont(family: string, text: string, weight = 400): Promise<Arr
   return res.arrayBuffer();
 }
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Badge config ─────────────────────────────────────────────────────────────
 const BADGE: Record<string, { label: string; icon: string; color: string; bg: string }> = {
   "Directly Stated":  { label: "Directly Stated",  icon: "📖", color: "#1A5C38", bg: "#EBF5EF" },
   "Concept Present":  { label: "Concept Present",  icon: "💡", color: "#7A5A00", bg: "#F5ECD2" },
@@ -41,15 +43,15 @@ export async function GET(req: Request) {
   const badge = BADGE[c] ?? BADGE["Cultural"];
   const barWidth = Math.round(((s - 1) / 4) * 88 + 6);
 
-  // Build the full text corpus so Google Fonts only sends the glyphs we need
-  const allText = `Is it in the Bible? ${q} ${v} ${badge.label} Biblical Score AI-POWERED BIBLICAL FACT-CHECKER · WORLD ENGLISH BIBLE isitinthebible.com`;
+  const displayDomain = SITE_URL.replace("https://", "");
 
-  // Load all three fonts in parallel
+  const allText = `Is it in the Bible? ${q} ${v} ${badge.label} Biblical Score AI-POWERED BIBLICAL FACT-CHECKER · WORLD ENGLISH BIBLE ${displayDomain}`;
+
   const [cormorantData, cormorantItalicData, dmSansData, dmMonoData] = await Promise.all([
     loadFont("Cormorant+Garamond", allText, 400),
     loadFont("Cormorant+Garamond", allText, 600),
-    loadFont("DM+Sans", allText, 500),
-    loadFont("DM+Mono", allText, 400),
+    loadFont("DM+Sans",            allText, 500),
+    loadFont("DM+Mono",            allText, 400),
   ]);
 
   return new ImageResponse(
@@ -109,7 +111,6 @@ export async function GET(req: Request) {
             >
               📖
             </div>
-            {/* DM Sans for the site name UI text */}
             <span
               style={{
                 color: "white",
@@ -125,7 +126,7 @@ export async function GET(req: Request) {
               </em>
             </span>
           </div>
-          {/* DM Mono for the domain */}
+          {/* Domain — updates automatically from SITE_URL */}
           <span
             style={{
               color: "rgba(255,255,255,.5)",
@@ -135,7 +136,7 @@ export async function GET(req: Request) {
               fontFamily: "'DM Mono'",
             }}
           >
-            isitinthebible.com
+            {displayDomain}
           </span>
         </div>
 
@@ -148,7 +149,7 @@ export async function GET(req: Request) {
             padding: "48px 60px 40px",
           }}
         >
-          {/* Classification badge — DM Mono label */}
+          {/* Classification badge */}
           <div
             style={{
               display: "flex",
@@ -177,7 +178,7 @@ export async function GET(req: Request) {
             </span>
           </div>
 
-          {/* Query — Cormorant Garamond, the hero text */}
+          {/* Query */}
           <div
             style={{
               fontSize: q.length > 50 ? 42 : q.length > 30 ? 52 : 62,
@@ -193,7 +194,7 @@ export async function GET(req: Request) {
             {q}
           </div>
 
-          {/* One-liner — Cormorant italic */}
+          {/* One-liner */}
           {v && (
             <div
               style={{
@@ -253,7 +254,7 @@ export async function GET(req: Request) {
           </div>
         </div>
 
-        {/* Bottom strip — DM Mono */}
+        {/* Bottom strip */}
         <div
           style={{
             display: "flex",
