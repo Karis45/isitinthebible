@@ -97,6 +97,20 @@ const TESTIMONIALS: Testimonial[] = [
   { quote: "Used this to settle a debate in my theology class. Students were shocked by the results.",                  author: "Prof. A. Wilson", role: "Divinity School"         },
 ];
 
+// ─── Nav link definitions ─────────────────────────────────────────────────────
+const NAV_LINKS = [
+  { label: "About",         href: "/about"         },
+  { label: "Methodology",   href: "/methodology"   },
+  { label: "Browse Topics", href: "#browse-topics" },
+];
+
+const FOOTER_LINKS = [
+  { label: "About",          href: "/about"         },
+  { label: "Methodology",    href: "/methodology"   },
+  { label: "Privacy Policy", href: "/privacy"       },
+  { label: "Browse Topics",  href: "#browse-topics" },
+];
+
 // ─── Tiny components ──────────────────────────────────────────────────────────
 function LogoMark({ size = 36 }: { size?: number }) {
   return (
@@ -118,14 +132,6 @@ function ClassChip({ classification, small }: { classification: string; small?: 
       <span style={{ width: small ? 5 : 6, height: small ? 5 : 6, borderRadius: "50%", background: b.dot, flexShrink: 0, display: "inline-block" }} />
       {b.label}
     </span>
-  );
-}
-
-function Divider({ label }: { label: string }) {
-  return (
-    <div className="divider">
-      <div className="divider-line" /><span className="divider-text">{label}</span><div className="divider-line" />
-    </div>
   );
 }
 
@@ -171,8 +177,6 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
     return () => document.removeEventListener("keydown", h);
   }, [menuOpen]);
 
-  const navLinks = ["About", "Methodology", "Browse Topics"];
-
   return (
     <header
       ref={headerRef}
@@ -188,13 +192,21 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
       </a>
 
       <nav className="desktop-nav" aria-label="Primary navigation">
-        {navLinks.map((l) => (
-          <a key={l} href={`#${l.toLowerCase().replace(/ /g, "-")}`}
+        {NAV_LINKS.map((l) => (
+          <a key={l.label} href={l.href}
             style={{ padding: "6px 12px", fontSize: 13.5, fontWeight: 500, color: T.inkMid, textDecoration: "none", borderRadius: 8, transition: "color .15s, background .15s", whiteSpace: "nowrap" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = T.blue; (e.currentTarget as HTMLElement).style.background = T.blueLt; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = T.inkMid; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-          >{l}</a>
+          >{l.label}</a>
         ))}
+        <a
+          href="https://ko-fi.com/isitinthebible"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ padding: "6px 12px", fontSize: 13.5, fontWeight: 500, color: T.inkMid, textDecoration: "none", borderRadius: 8, transition: "color .15s, background .15s", whiteSpace: "nowrap" }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = T.blue; (e.currentTarget as HTMLElement).style.background = T.blueLt; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = T.inkMid; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+        >☕ Donate</a>
         <a href="#search"
           style={{ marginLeft: 6, padding: "7px 16px", background: T.blue, color: "white", fontSize: 13.5, fontWeight: 600, textDecoration: "none", borderRadius: 10, transition: "background .15s", whiteSpace: "nowrap" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = T.blueMid; }}
@@ -216,11 +228,17 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
 
       {menuOpen && (
         <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation">
-          {navLinks.map((l, i) => (
-            <a key={l} href={`#${l.toLowerCase().replace(/ /g, "-")}`} onClick={() => setMenuOpen(false)}
-              style={{ borderBottom: i < navLinks.length - 1 ? `1px solid ${T.inkFt}` : "none" }}
-            >{l}</a>
+          {NAV_LINKS.map((l, i) => (
+            <a key={l.label} href={l.href} onClick={() => setMenuOpen(false)}
+              style={{ borderBottom: i < NAV_LINKS.length - 1 ? `1px solid ${T.inkFt}` : "none" }}
+            >{l.label}</a>
           ))}
+          <a
+            href="https://ko-fi.com/isitinthebible"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMenuOpen(false)}
+          >☕ Donate</a>
         </nav>
       )}
     </header>
@@ -250,7 +268,7 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
         </h1>
 
         <p className="animate-in-delay-2" style={{ maxWidth: 540, margin: "0 auto 10px", color: T.ink, fontSize: 18, lineHeight: 1.65, fontFamily: T.serif }}>
-          <em>"God helps those who help themselves."</em>{" "}
+          <em>&ldquo;God helps those who help themselves.&rdquo;</em>{" "}
           <span style={{ color: T.red, fontWeight: 600 }}>Not in the Bible.</span>
         </p>
         <p className="animate-in-delay-2" style={{ maxWidth: 500, margin: "0 auto 36px", color: T.inkMid, fontSize: 15, lineHeight: 1.8, fontWeight: 300 }}>
@@ -458,7 +476,7 @@ function MisquotesSection({ onSearch }: { onSearch: (q: string) => void }) {
               The AI <em style={{ fontStyle: "italic", color: T.red }}>surprises</em> even lifelong believers
             </h2>
             <p style={{ color: T.inkMid, fontSize: 15, lineHeight: 1.8, marginBottom: 28, fontWeight: 300, maxWidth: 440 }}>
-              These phrases are <strong style={{ color: T.ink }}>passed down through culture, sermons, and social media</strong> — but they've never appeared in any Bible translation.
+              These phrases are <strong style={{ color: T.ink }}>passed down through culture, sermons, and social media</strong> — but they&apos;ve never appeared in any Bible translation.
             </p>
             <button onClick={() => onSearch("God helps those who help themselves")}
               style={{ padding: "12px 24px", background: T.blue, color: "white", border: "none", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: T.sans, transition: "background .2s" }}
@@ -510,7 +528,7 @@ function TestimonialsSection() {
                   </svg>
                 ))}
               </div>
-              <blockquote style={{ fontFamily: T.serif, fontSize: 16, fontStyle: "italic", color: T.ink, lineHeight: 1.7, marginBottom: 16 }}>"{t.quote}"</blockquote>
+              <blockquote style={{ fontFamily: T.serif, fontSize: 16, fontStyle: "italic", color: T.ink, lineHeight: 1.7, marginBottom: 16 }}>&ldquo;{t.quote}&rdquo;</blockquote>
               <figcaption>
                 <div style={{ fontWeight: 600, fontSize: 13, color: T.ink }}>{t.author}</div>
                 <div style={{ fontSize: 11.5, color: T.inkLt }}>{t.role}</div>
@@ -613,7 +631,6 @@ function LoadingOverlay() {
 //  FOOTER
 // ─────────────────────────────────────────────────────────────────────────────
 function SiteFooter() {
-  const footerLinks = ["About", "Methodology", "Privacy Policy", "Terms of Use", "Contact"];
   return (
     <footer style={{ background: T.ink, padding: "48px 24px 28px", textAlign: "center" }} role="contentinfo">
       <div className="container">
@@ -624,13 +641,21 @@ function SiteFooter() {
           </span>
         </a>
         <nav aria-label="Footer navigation" style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "8px 24px", marginBottom: 28 }}>
-          {footerLinks.map((l) => (
-            <a key={l} href="#"
+          {FOOTER_LINKS.map((l) => (
+            <a key={l.label} href={l.href}
               style={{ fontSize: 13, color: "rgba(255,255,255,.5)", textDecoration: "none", fontWeight: 500, transition: "color .15s" }}
               onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "white"; }}
               onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "rgba(255,255,255,.5)"; }}
-            >{l}</a>
+            >{l.label}</a>
           ))}
+          <a
+            href="https://ko-fi.com/isitinthebible"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: 13, color: "rgba(255,255,255,.5)", textDecoration: "none", fontWeight: 500, transition: "color .15s" }}
+            onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "white"; }}
+            onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "rgba(255,255,255,.5)"; }}
+          >☕ Donate</a>
         </nav>
         <div style={{ width: 40, height: 1, background: "rgba(255,255,255,.1)", margin: "0 auto 20px" }} aria-hidden="true" />
         <p style={{ fontFamily: T.mono, fontSize: 11, color: "rgba(255,255,255,.25)", letterSpacing: ".05em", lineHeight: 1.8, margin: 0 }}>
@@ -644,11 +669,9 @@ function SiteFooter() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  HOME CLIENT — accepts pre-fetched result from the server page
+//  HOME CLIENT
 // ─────────────────────────────────────────────────────────────────────────────
 interface HomeClientProps {
-  // Passed down from the server page when a ?q= param was present at request time.
-  // If provided, the modal opens immediately with this result — no second fetch needed.
   prefetchedResult: BibleResult | null;
   initialQuery: string | null;
 }
@@ -706,10 +729,8 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
     }
   }, []);
 
-  // Only trigger auto-search from URL if the server didn't already pre-fetch.
-  // This avoids a double API call when the server passes prefetchedResult down.
   useEffect(() => {
-    if (prefetchedResult) return; // server already handled it
+    if (prefetchedResult) return;
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const query = params.get("q");
