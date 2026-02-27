@@ -37,7 +37,6 @@ const SITE_NAME = "Is it in the Bible?";
 const SITE_DESC =
   "AI-powered biblical fact-checker. Type any phrase, doctrine, or belief and find out exactly what Scripture says — with the actual verses to back it up.";
 
-// Classification → human-readable verdict for OG description
 const VERDICT_LABELS: Record<Classification, string> = {
   "Directly Stated":  "✅ Directly Stated in Scripture",
   "Concept Present":  "💡 Concept Present in Scripture",
@@ -47,9 +46,14 @@ const VERDICT_LABELS: Record<Classification, string> = {
 };
 
 // ─── Server-side result fetcher ───────────────────────────────────────────────
+// Uses VERCEL_URL so internal fetch works before custom domain is live.
 async function fetchResult(query: string): Promise<BibleResult | null> {
   try {
-    const res = await fetch(`${SITE_URL}/api/analyze`, {
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : SITE_URL;
+
+    const res = await fetch(`${baseUrl}/api/analyze`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({ statement: query }),
@@ -72,7 +76,6 @@ export async function generateMetadata({
   const params = await searchParams;
   const query  = params?.q?.trim() ?? "";
 
-  // ── No query → site defaults ──────────────────────────────────────────────
   if (!query) {
     return {
       title:       SITE_NAME,
@@ -93,7 +96,6 @@ export async function generateMetadata({
     };
   }
 
-  // ── Query present → fetch result for rich metadata ────────────────────────
   const result = await fetchResult(query);
 
   const title = result
@@ -104,16 +106,11 @@ export async function generateMetadata({
     ? `${result.oneLiner} Verdict: ${VERDICT_LABELS[result.classification]}. Analyzed against all 31,102 Bible verses.`
     : `Find out if "${query}" is in the Bible. AI-powered analysis of all 31,102 Bible verses.`;
 
-  // Build OG image URL — only pass clean one-liner, truncated to 100 chars
-  const oneLinerClean = result
-    ? result.oneLiner.slice(0, 100)
-    : "";
-
   const ogParams = new URLSearchParams({ q: query });
   if (result) {
     ogParams.set("c", result.classification);
     ogParams.set("s", String(result.explicitnessScore));
-    ogParams.set("v", oneLinerClean);
+    ogParams.set("v", result.oneLiner.slice(0, 100));
   }
   const ogImageUrl   = `${SITE_URL}/api/og?${ogParams.toString()}`;
   const canonicalUrl = `${SITE_URL}?q=${encodeURIComponent(query)}`;
@@ -145,7 +142,6 @@ export default async function Page({
 }) {
   const params = await searchParams;
   const query  = params?.q?.trim() ?? "";
-
   const prefetchedResult = query ? await fetchResult(query) : null;
 
   return (
