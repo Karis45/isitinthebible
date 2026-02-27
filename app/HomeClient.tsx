@@ -2,9 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import ResultsModal from "./ResultsModal";
-import AdUnit from "./AdUnit"; // ← NEW
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 type Classification =
   | "Directly Stated"
   | "Concept Present"
@@ -29,7 +27,6 @@ interface BibleResult {
   relatedTopics: { query: string; classification: Classification }[];
 }
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
   parchment: "#F5F1E8", parchmentDark: "#EDE8DA", white: "#FFFFFF",
   ink: "#1A1612", inkMid: "#4A3F35", inkLt: "#8A7D72", inkFt: "#D8D0C4",
@@ -44,7 +41,6 @@ const T = {
   shadowLg: "0 8px 32px rgba(26,22,18,.12), 0 24px 64px rgba(26,22,18,.08)",
 };
 
-// ─── Static data ──────────────────────────────────────────────────────────────
 const BADGE_CONFIG: Record<Classification, BadgeConfig> = {
   "Directly Stated":  { bg: "#EBF5EF", text: "#1A5C38", border: "#A8D4B8", dot: "#1A5C38", label: "Directly Stated",  icon: "📖" },
   "Concept Present":  { bg: "#F5ECD2", text: "#7A5A00", border: "#D4B870", dot: "#B8860B", label: "Concept Present",  icon: "💡" },
@@ -98,7 +94,21 @@ const TESTIMONIALS: Testimonial[] = [
   { quote: "Used this to settle a debate in my theology class. Students were shocked by the results.",                  author: "Prof. A. Wilson", role: "Divinity School"         },
 ];
 
-// ─── Tiny components ──────────────────────────────────────────────────────────
+// ✅ Nav links — /about, /methodology, #browse-topics
+const NAV_LINKS = [
+  { label: "About",         href: "/about"         },
+  { label: "Methodology",   href: "/methodology"   },
+  { label: "Browse Topics", href: "#browse-topics" },
+];
+
+// ✅ Footer links — /about, /methodology, /privacy, #browse-topics
+const FOOTER_LINKS = [
+  { label: "About",          href: "/about"         },
+  { label: "Methodology",    href: "/methodology"   },
+  { label: "Privacy Policy", href: "/privacy"       },
+  { label: "Browse Topics",  href: "#browse-topics" },
+];
+
 function LogoMark({ size = 36 }: { size?: number }) {
   return (
     <div style={{ width: size, height: size, background: T.blue, borderRadius: Math.round(size * 0.25), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(26,58,106,.28)" }}>
@@ -122,17 +132,12 @@ function ClassChip({ classification, small }: { classification: string; small?: 
   );
 }
 
-function Divider({ label }: { label: string }) {
-  return (
-    <div className="divider">
-      <div className="divider-line" /><span className="divider-text">{label}</span><div className="divider-line" />
-    </div>
-  );
+// ✅ Ad slots hidden until AdSense approved
+function AdLeaderboard({ id = "ad" }: { id?: string }) {
+  return null;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  HEADER
-// ─────────────────────────────────────────────────────────────────────────────
+// ✅ HEADER — desktop nav + mobile menu both include ☕ Donate
 function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -160,8 +165,6 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
     return () => document.removeEventListener("keydown", h);
   }, [menuOpen]);
 
-  const navLinks = ["About", "Methodology", "Browse Topics"];
-
   return (
     <header
       ref={headerRef}
@@ -177,13 +180,22 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
       </a>
 
       <nav className="desktop-nav" aria-label="Primary navigation">
-        {navLinks.map((l) => (
-          <a key={l} href={`#${l.toLowerCase().replace(/ /g, "-")}`}
+        {NAV_LINKS.map((l) => (
+          <a key={l.label} href={l.href}
             style={{ padding: "6px 12px", fontSize: 13.5, fontWeight: 500, color: T.inkMid, textDecoration: "none", borderRadius: 8, transition: "color .15s, background .15s", whiteSpace: "nowrap" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = T.blue; (e.currentTarget as HTMLElement).style.background = T.blueLt; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = T.inkMid; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-          >{l}</a>
+          >{l.label}</a>
         ))}
+        {/* ✅ Donate — desktop nav */}
+        <a
+          href="https://ko-fi.com/isitinthebible"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ padding: "6px 12px", fontSize: 13.5, fontWeight: 500, color: T.inkMid, textDecoration: "none", borderRadius: 8, transition: "color .15s, background .15s", whiteSpace: "nowrap" }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = T.blue; (e.currentTarget as HTMLElement).style.background = T.blueLt; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = T.inkMid; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+        >☕ Donate</a>
         <a href="#search"
           style={{ marginLeft: 6, padding: "7px 16px", background: T.blue, color: "white", fontSize: 13.5, fontWeight: 600, textDecoration: "none", borderRadius: 10, transition: "background .15s", whiteSpace: "nowrap" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = T.blueMid; }}
@@ -205,20 +217,24 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
 
       {menuOpen && (
         <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation">
-          {navLinks.map((l, i) => (
-            <a key={l} href={`#${l.toLowerCase().replace(/ /g, "-")}`} onClick={() => setMenuOpen(false)}
-              style={{ borderBottom: i < navLinks.length - 1 ? `1px solid ${T.inkFt}` : "none" }}
-            >{l}</a>
+          {NAV_LINKS.map((l, i) => (
+            <a key={l.label} href={l.href} onClick={() => setMenuOpen(false)}
+              style={{ borderBottom: i < NAV_LINKS.length - 1 ? `1px solid ${T.inkFt}` : "none" }}
+            >{l.label}</a>
           ))}
+          {/* ✅ Donate — mobile hamburger menu */}
+          <a
+            href="https://ko-fi.com/isitinthebible"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMenuOpen(false)}
+          >☕ Donate</a>
         </nav>
       )}
     </header>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  HERO
-// ─────────────────────────────────────────────────────────────────────────────
 function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pending: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -227,25 +243,21 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
       <div className="hero-bg-lines" aria-hidden="true" />
       <div className="hero-ornament" aria-hidden="true" />
       <div style={{ position: "relative", zIndex: 1 }}>
-
         <div className="animate-in" style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: T.inkLt, marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
           <div style={{ width: 28, height: 1, background: T.inkFt }} aria-hidden="true" />
           AI-Powered Biblical Fact-Checker
           <div style={{ width: 28, height: 1, background: T.inkFt }} aria-hidden="true" />
         </div>
-
         <h1 id="hero-heading" className="animate-in-delay-1" style={{ fontFamily: T.serif, fontSize: "clamp(48px, 9vw, 100px)", fontWeight: 300, color: T.ink, lineHeight: 1.05, marginBottom: 20, letterSpacing: "-2px" }}>
           Is it in the <em style={{ fontStyle: "italic", color: T.blue, fontWeight: 400 }}>Bible?</em>
         </h1>
-
         <p className="animate-in-delay-2" style={{ maxWidth: 540, margin: "0 auto 10px", color: T.ink, fontSize: 18, lineHeight: 1.65, fontFamily: T.serif }}>
-          <em>"God helps those who help themselves."</em>{" "}
+          <em>&ldquo;God helps those who help themselves.&rdquo;</em>{" "}
           <span style={{ color: T.red, fontWeight: 600 }}>Not in the Bible.</span>
         </p>
         <p className="animate-in-delay-2" style={{ maxWidth: 500, margin: "0 auto 36px", color: T.inkMid, fontSize: 15, lineHeight: 1.8, fontWeight: 300 }}>
           Millions of phrases get credited to Scripture that never appear there. Our AI reads all 31,000+ verses in seconds and gives you a verdict — with the actual passages to back it up.
         </p>
-
         <div className="animate-in-delay-3" style={{ marginBottom: 0 }} role="search" aria-label="Search for phrases or beliefs">
           <div className="search-wrapper">
             <label htmlFor="hero-input" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
@@ -283,7 +295,6 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
             </button>
           </div>
         </div>
-
         <div className="animate-in-delay-4">
           <div className="suggestions-row" role="list" aria-label="Popular searches" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
             {SUGGESTIONS.map((s) => {
@@ -297,7 +308,6 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
             })}
           </div>
         </div>
-
         <div className="animate-in-delay-5">
           <div className="trust-bar" role="list" aria-label="Trust indicators">
             {[
@@ -315,15 +325,11 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  STATS STRIP
-// ─────────────────────────────────────────────────────────────────────────────
 function StatsStrip() {
   return (
     <section style={{ background: T.blue, padding: "40px 24px" }} aria-label="Database statistics">
@@ -340,9 +346,6 @@ function StatsStrip() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  HOW IT WORKS
-// ─────────────────────────────────────────────────────────────────────────────
 function HowItWorks() {
   return (
     <section className="section" style={{ background: T.white }} id="methodology" aria-labelledby="how-heading">
@@ -369,9 +372,6 @@ function HowItWorks() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  CLASSIFICATION LEGEND
-// ─────────────────────────────────────────────────────────────────────────────
 function ClassificationLegend() {
   return (
     <section className="section-sm" style={{ background: T.parchment, borderTop: `1px solid ${T.inkFt}`, borderBottom: `1px solid ${T.inkFt}` }} id="about" aria-labelledby="legend-heading">
@@ -395,9 +395,6 @@ function ClassificationLegend() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  TRENDING TOPICS
-// ─────────────────────────────────────────────────────────────────────────────
 function TrendingTopics({ onSearch }: { onSearch: (q: string) => void }) {
   return (
     <section className="section" id="browse-topics" aria-labelledby="trending-heading">
@@ -433,9 +430,6 @@ function TrendingTopics({ onSearch }: { onSearch: (q: string) => void }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  MISQUOTES
-// ─────────────────────────────────────────────────────────────────────────────
 function MisquotesSection({ onSearch }: { onSearch: (q: string) => void }) {
   return (
     <section className="section" style={{ background: T.white }} aria-labelledby="misquotes-heading">
@@ -447,7 +441,7 @@ function MisquotesSection({ onSearch }: { onSearch: (q: string) => void }) {
               The AI <em style={{ fontStyle: "italic", color: T.red }}>surprises</em> even lifelong believers
             </h2>
             <p style={{ color: T.inkMid, fontSize: 15, lineHeight: 1.8, marginBottom: 28, fontWeight: 300, maxWidth: 440 }}>
-              These phrases are <strong style={{ color: T.ink }}>passed down through culture, sermons, and social media</strong> — but they've never appeared in any Bible translation.
+              These phrases are <strong style={{ color: T.ink }}>passed down through culture, sermons, and social media</strong> — but they&apos;ve never appeared in any Bible translation.
             </p>
             <button onClick={() => onSearch("God helps those who help themselves")}
               style={{ padding: "12px 24px", background: T.blue, color: "white", border: "none", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: T.sans, transition: "background .2s" }}
@@ -478,9 +472,6 @@ function MisquotesSection({ onSearch }: { onSearch: (q: string) => void }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  TESTIMONIALS
-// ─────────────────────────────────────────────────────────────────────────────
 function TestimonialsSection() {
   return (
     <section className="section" style={{ background: T.parchment, borderTop: `1px solid ${T.inkFt}` }} aria-labelledby="testimonials-heading">
@@ -499,7 +490,7 @@ function TestimonialsSection() {
                   </svg>
                 ))}
               </div>
-              <blockquote style={{ fontFamily: T.serif, fontSize: 16, fontStyle: "italic", color: T.ink, lineHeight: 1.7, marginBottom: 16 }}>"{t.quote}"</blockquote>
+              <blockquote style={{ fontFamily: T.serif, fontSize: 16, fontStyle: "italic", color: T.ink, lineHeight: 1.7, marginBottom: 16 }}>&ldquo;{t.quote}&rdquo;</blockquote>
               <figcaption>
                 <div style={{ fontWeight: 600, fontSize: 13, color: T.ink }}>{t.author}</div>
                 <div style={{ fontSize: 11.5, color: T.inkLt }}>{t.role}</div>
@@ -512,9 +503,6 @@ function TestimonialsSection() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  CTA BANNER
-// ─────────────────────────────────────────────────────────────────────────────
 function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   return (
@@ -568,9 +556,6 @@ function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  LOADING OVERLAY
-// ─────────────────────────────────────────────────────────────────────────────
 function LoadingOverlay() {
   return (
     <div style={{
@@ -598,19 +583,8 @@ function LoadingOverlay() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  FOOTER — Privacy Policy now links to /privacy
-// ─────────────────────────────────────────────────────────────────────────────
+// ✅ FOOTER — links to /about, /methodology, /privacy, #browse-topics + ☕ Donate
 function SiteFooter() {
-  // Map label → href. Everything else stays as "#" until you build those pages.
-  const footerLinks: { label: string; href: string }[] = [
-    { label: "About",          href: "#about"       },
-    { label: "Methodology",    href: "#methodology" },
-    { label: "Privacy Policy", href: "/privacy"     }, // ← links to real page
-    { label: "Terms of Use",   href: "#"            },
-    { label: "Contact",        href: "#"            },
-  ];
-
   return (
     <footer style={{ background: T.ink, padding: "48px 24px 28px", textAlign: "center" }} role="contentinfo">
       <div className="container">
@@ -621,13 +595,22 @@ function SiteFooter() {
           </span>
         </a>
         <nav aria-label="Footer navigation" style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "8px 24px", marginBottom: 28 }}>
-          {footerLinks.map(({ label, href }) => (
-            <a key={label} href={href}
+          {FOOTER_LINKS.map((l) => (
+            <a key={l.label} href={l.href}
               style={{ fontSize: 13, color: "rgba(255,255,255,.5)", textDecoration: "none", fontWeight: 500, transition: "color .15s" }}
               onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "white"; }}
               onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "rgba(255,255,255,.5)"; }}
-            >{label}</a>
+            >{l.label}</a>
           ))}
+          {/* ✅ Donate — footer */}
+          <a
+            href="https://ko-fi.com/isitinthebible"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: 13, color: "rgba(255,255,255,.5)", textDecoration: "none", fontWeight: 500, transition: "color .15s" }}
+            onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "white"; }}
+            onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "rgba(255,255,255,.5)"; }}
+          >☕ Donate</a>
         </nav>
         <div style={{ width: 40, height: 1, background: "rgba(255,255,255,.1)", margin: "0 auto 20px" }} aria-hidden="true" />
         <p style={{ fontFamily: T.mono, fontSize: 11, color: "rgba(255,255,255,.25)", letterSpacing: ".05em", lineHeight: 1.8, margin: 0 }}>
@@ -640,9 +623,6 @@ function SiteFooter() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  HOME CLIENT
-// ─────────────────────────────────────────────────────────────────────────────
 interface HomeClientProps {
   prefetchedResult: BibleResult | null;
   initialQuery: string | null;
@@ -712,7 +692,6 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
   return (
     <div style={{ background: T.parchment, minHeight: "100vh" }}>
       <a href="#main-content" className="skip-link">Skip to main content</a>
-
       <div
         role="status"
         aria-live="polite"
@@ -721,54 +700,25 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
       >
         {liveAnnouncement}
       </div>
-
       <SiteHeader onSearch={handleSearch} />
-
       <main id="main-content">
         <HeroSection onSearch={handleSearch} pending={pending} />
-
-        {/* ── Ad: top leaderboard ── */}
-        <div style={{ background: T.parchmentDark, borderBottom: `1px solid ${T.inkFt}`, padding: "12px 24px", display: "flex", justifyContent: "center" }}>
-          <AdUnit slot="top" />
-        </div>
-
         <StatsStrip />
-
         {error && (
           <div style={{ maxWidth: 640, margin: "20px auto", padding: "14px 16px", background: T.redLt, border: `1px solid #E8C4C4`, borderRadius: 12, fontSize: 14, color: T.red, lineHeight: 1.6, display: "flex", alignItems: "flex-start", gap: 10 }} role="alert">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
             <span>{error}</span>
           </div>
         )}
-
         {pending && <LoadingOverlay />}
-
-        <ResultsModal
-          result={result}
-          onClose={handleCloseModal}
-          onSearch={handleSearch}
-        />
-
+        <ResultsModal result={result} onClose={handleCloseModal} onSearch={handleSearch} />
         <HowItWorks />
-
-        {/* ── Ad: mid-page ── */}
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 16px" }}>
-          <AdUnit slot="mid" />
-        </div>
-
         <ClassificationLegend />
         <TrendingTopics onSearch={handleSearch} />
-
-        {/* ── Ad: below trending ── */}
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 16px" }}>
-          <AdUnit slot="trending" />
-        </div>
-
         <MisquotesSection onSearch={handleSearch} />
         <TestimonialsSection />
         <CTABanner onSearch={handleSearch} />
       </main>
-
       <SiteFooter />
     </div>
   );
