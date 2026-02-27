@@ -4,7 +4,7 @@
 
 import type { MetadataRoute } from "next";
 
-const SITE_URL = "https://isitinthebible.com";
+const SITE_URL = "https://isitinthebible.org";
 
 // High-traffic queries — each becomes a crawlable URL with full SSR metadata.
 // Add more as you discover popular searches in your analytics.

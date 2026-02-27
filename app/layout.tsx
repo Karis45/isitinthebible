@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 
-const SITE_URL  = "https://isitinthebible.com";
+const SITE_URL  = "https://isitinthebible.org";
 const SITE_NAME = "Is it in the Bible?";
 const SITE_DESC =
   "AI-powered biblical fact-checker. Type any phrase, doctrine, or belief and find out exactly what Scripture says — with the actual verses to back it up.";

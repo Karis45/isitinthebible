@@ -3,7 +3,7 @@
 
 import type { MetadataRoute } from "next";
 
-const SITE_URL = "https://isitinthebible.com";
+const SITE_URL = "https://isitinthebible.org";
 
 export default function robots(): MetadataRoute.Robots {
   return {
