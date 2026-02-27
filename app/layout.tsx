@@ -1,6 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/react"; // ← add this
 import "./globals.css";
 
 const SITE_URL  = "https://isitinthebible.org"; // ← update to your final domain
@@ -124,6 +125,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
+        <Analytics />  {/* ← add this */}
         {process.env.NODE_ENV === "production" && (
           <Script
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
