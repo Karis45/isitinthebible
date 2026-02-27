@@ -1,66 +1,72 @@
-// app/sitemap.ts
-// Generates /sitemap.xml automatically.
-// Pre-lists high-traffic queries so Googlebot can crawl result pages.
+import { MetadataRoute } from "next";
 
-import type { MetadataRoute } from "next";
+const SITE_URL = "https://isitinthebible.com";
 
-const SITE_URL = "https://isitinthebible.org";
+const STATIC_PAGES: MetadataRoute.Sitemap = [
+  { url: SITE_URL,                  lastModified: new Date(), changeFrequency: "daily",   priority: 1.0 },
+  { url: `${SITE_URL}/about`,       lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+  { url: `${SITE_URL}/methodology`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+  { url: `${SITE_URL}/privacy`,     lastModified: new Date(), changeFrequency: "yearly",  priority: 0.3 },
+];
 
-// High-traffic queries — each becomes a crawlable URL with full SSR metadata.
-// Add more as you discover popular searches in your analytics.
-const POPULAR_QUERIES = [
-  "The Rapture",
-  "Purgatory",
-  "Guardian Angels",
-  "The Trinity",
+const POPULAR_QUERIES: string[] = [
   "God helps those who help themselves",
   "Cleanliness is next to godliness",
-  "Money is the root of all evil",
   "This too shall pass",
-  "Hell",
+  "Spare the rod spoil the child",
+  "Money is the root of all evil",
+  "Pride comes before a fall",
+  "To thine own self be true",
+  "The lion shall lie down with the lamb",
+  "The Rapture",
+  "Purgatory",
+  "The Trinity",
   "Original Sin",
+  "Guardian Angels",
+  "Hell",
+  "Heaven",
+  "Soul Sleep",
   "Free Will",
   "Prosperity Gospel",
-  "Soul Sleep",
+  "Predestination",
+  "Baptism",
+  "Confession",
+  "Transubstantiation",
+  "Immaculate Conception",
+  "Penance",
   "Manifesting",
-  "Spare the rod spoil the child",
+  "Karma",
+  "Reincarnation",
   "Eye of a needle",
-  "Pride comes before a fall",
+  "Turn the other cheek",
+  "Love thy neighbor",
+  "Judge not lest ye be judged",
+  "The Golden Rule",
+  "Do unto others",
   "Forbidden fruit",
-  "Heaven is a place on Earth",
-  "God will not give you more than you can handle",
-  "Love the sinner hate the sin",
-  "The road to hell is paved with good intentions",
-  "Satan fell like lightning from heaven",
-  "Once saved always saved",
-  "Baptism of the Holy Spirit",
-  "Christmas",
-  "Easter",
-  "Seven deadly sins",
-  "The Antichrist",
-  "Limbo",
+  "Prodigal son",
+  "Armageddon",
+  "666 Mark of the Beast",
+  "Second Coming",
+  "Resurrection",
+  "Judgment Day",
+  "Eternal life",
+  "Does God hate sinners",
+  "Is suicide unforgivable",
+  "Can women be pastors",
+  "Is abortion in the Bible",
+  "Homosexuality in the Bible",
+  "Is tattoos a sin",
+  "Is drinking alcohol a sin",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-
-  // Homepage
-  const staticRoutes: MetadataRoute.Sitemap = [
-    {
-      url:             SITE_URL,
-      lastModified:    now,
-      changeFrequency: "daily",
-      priority:        1,
-    },
-  ];
-
-  // One URL per popular query
-  const queryRoutes: MetadataRoute.Sitemap = POPULAR_QUERIES.map((q) => ({
-    url:             `${SITE_URL}?q=${encodeURIComponent(q)}`,
-    lastModified:    now,
+  const queryPages: MetadataRoute.Sitemap = POPULAR_QUERIES.map((query) => ({
+    url: `${SITE_URL}/?q=${encodeURIComponent(query)}`,
+    lastModified: new Date(),
     changeFrequency: "weekly" as const,
-    priority:        0.8,
+    priority: 0.7,
   }));
 
-  return [...staticRoutes, ...queryRoutes];
+  return [...STATIC_PAGES, ...queryPages];
 }
