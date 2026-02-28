@@ -8,7 +8,6 @@ export const metadata: Metadata = {
     "Anthony Kariuki built Is it in the Bible? after realising many phrases he believed were Scripture simply weren't. This is the story behind the mission.",
 };
 
-// ─── Design tokens (matches site) ─────────────────────────────────────────────
 const T = {
   parchment:     "#F5F1E8",
   parchmentDark: "#EDE8DA",
@@ -26,7 +25,13 @@ const T = {
   mono:          "'DM Mono', monospace",
 };
 
-// Shared LogoMark SVG — matches HomeClient.tsx and methodology/page.tsx exactly
+const NAV_LINKS = [
+  { label: "About",         href: "/about"         },
+  { label: "Methodology",   href: "/methodology"   },
+  { label: "Browse Topics", href: "/#browse-topics" },
+  { label: "Contact",       href: "/contact"       },
+];
+
 function LogoMark({ size = 36 }: { size?: number }) {
   return (
     <div style={{
@@ -51,7 +56,6 @@ function LogoMark({ size = 36 }: { size?: number }) {
   );
 }
 
-// Inline logo icon for use inside buttons/links on dark backgrounds
 function LogoIcon({ size = 16 }: { size?: number }) {
   return (
     <svg
@@ -74,11 +78,13 @@ export default function AboutPage() {
   return (
     <main style={{ background: T.parchment, minHeight: "100vh", fontFamily: T.sans }}>
 
-      {/* ── Nav ── */}
+      {/* ── Nav — matches homepage header ── */}
       <nav style={{
-        background: "white",
+        background: "rgba(245,241,232,0.96)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
         borderBottom: `1px solid ${T.inkFt}`,
-        padding: "0 24px",
+        padding: "0 32px",
         height: 64,
         display: "flex",
         alignItems: "center",
@@ -86,20 +92,51 @@ export default function AboutPage() {
         position: "sticky",
         top: 0,
         zIndex: 100,
+        gap: 16,
       }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
           <LogoMark />
-          <span style={{ fontFamily: T.serif, fontSize: 20, color: T.ink, fontWeight: 600 }}>
-            Is it in the <em style={{ color: T.blue }}>Bible?</em>
+          <span style={{ fontFamily: T.serif, fontSize: 19, color: T.ink, fontWeight: 600, letterSpacing: "-.2px" }}>
+            Is it in the <em style={{ fontStyle: "italic", color: T.blue }}>Bible?</em>
           </span>
         </Link>
-        <Link href="/" style={{
-          padding: "8px 18px", borderRadius: 8, background: T.blue,
-          color: "white", textDecoration: "none", fontSize: 13,
-          fontWeight: 600, fontFamily: T.sans,
-        }}>
-          Search
-        </Link>
+
+        {/* Desktop nav links */}
+        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {NAV_LINKS.map((l) => (
+            <Link
+              key={l.label}
+              href={l.href}
+              style={{
+                padding: "6px 12px",
+                fontSize: 13.5,
+                fontWeight: 500,
+                color: l.href === "/about" ? T.blue : T.inkMid,
+                textDecoration: "none",
+                borderRadius: 8,
+                background: l.href === "/about" ? T.blueLt : "transparent",
+                whiteSpace: "nowrap",
+                fontFamily: T.sans,
+              }}
+            >
+              {l.label}
+            </Link>
+          ))}
+          <Link href="/" style={{
+            marginLeft: 6,
+            padding: "7px 16px",
+            background: T.blue,
+            color: "white",
+            fontSize: 13.5,
+            fontWeight: 600,
+            textDecoration: "none",
+            borderRadius: 10,
+            whiteSpace: "nowrap",
+            fontFamily: T.sans,
+          }}>
+            Search
+          </Link>
+        </div>
       </nav>
 
       {/* ── Hero ── */}
@@ -110,7 +147,6 @@ export default function AboutPage() {
         position: "relative",
         overflow: "hidden",
       }}>
-        {/* Decorative circles */}
         <div style={{ position: "absolute", top: -60, left: -60, width: 240, height: 240, borderRadius: "50%", background: "rgba(255,255,255,.04)" }} />
         <div style={{ position: "absolute", bottom: -40, right: -40, width: 180, height: 180, borderRadius: "50%", background: "rgba(255,255,255,.04)" }} />
 
@@ -143,17 +179,10 @@ export default function AboutPage() {
 
       {/* ── Founder story ── */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "72px 24px" }}>
-
-        {/* Pull quote */}
-        <div style={{
-          borderLeft: `4px solid ${T.blue}`,
-          paddingLeft: 28,
-          marginBottom: 56,
-        }}>
+        <div style={{ borderLeft: `4px solid ${T.blue}`, paddingLeft: 28, marginBottom: 56 }}>
           <p style={{
             fontFamily: T.serif, fontSize: "clamp(22px, 3vw, 30px)",
-            color: T.ink, lineHeight: 1.5, fontStyle: "italic",
-            margin: 0,
+            color: T.ink, lineHeight: 1.5, fontStyle: "italic", margin: 0,
           }}>
             &ldquo;I used to quote phrases I was certain were Scripture.
             The day I discovered they weren&apos;t — I felt both embarrassed
@@ -175,7 +204,6 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Story body */}
         <div style={{ fontFamily: T.serif, fontSize: 17, lineHeight: 1.9, color: T.inkMid }}>
           <p style={{ marginBottom: 24 }}>
             My name is Anthony Kariuki. I&apos;m an indie developer — not a theologian,
@@ -385,8 +413,10 @@ export default function AboutPage() {
         padding: "24px",
         textAlign: "center",
       }}>
+        {/* ✅ FIXED: hardcoded year to avoid hydration mismatch */}
+        {/* ✅ FIXED: removed "Built by Anthony Kariuki" per preference */}
         <p style={{ fontFamily: T.mono, fontSize: 11, color: T.inkLt, margin: 0, letterSpacing: ".06em" }}>
-          © {new Date().getFullYear()} Is it in the Bible? · Built by Anthony Kariuki ·{" "}
+          © 2026 Is it in the Bible? · Built by Anthony Kariuki ·{" "}
           <Link href="/privacy" style={{ color: T.inkLt }}>Privacy Policy</Link>
           {" · "}
           <Link href="/methodology" style={{ color: T.inkLt }}>Methodology</Link>
