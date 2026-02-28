@@ -81,7 +81,6 @@ export default function ContactPage() {
     if (!name.trim() || !email.trim() || !message.trim()) return;
     setStatus("sending");
     try {
-      // Replace with your actual form endpoint (e.g. Formspree, Resend, etc.)
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -151,7 +150,7 @@ export default function ContactPage() {
             {status === "error" && (
               <div style={{ background: T.redLt, border: `1px solid #E8C4C4`, borderRadius: 10, padding: "12px 14px", marginBottom: 24, fontSize: 13.5, color: T.red, display: "flex", alignItems: "center", gap: 9 }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-                Something went wrong. Please try again or email us directly.
+                Something went wrong. Please try again.
               </div>
             )}
 
@@ -274,12 +273,6 @@ export default function ContactPage() {
                 )}
               </button>
 
-              <p style={{ textAlign: "center", fontSize: 12, color: T.inkLt, lineHeight: 1.6, margin: 0 }}>
-                Prefer email?{" "}
-                <a href="mailto:hello@isitinthebible.com" style={{ color: T.blue, textDecoration: "none", fontWeight: 500 }}>
-                  hello@isitinthebible.com
-                </a>
-              </p>
             </div>
           </div>
         )}
