@@ -13,14 +13,27 @@ export const metadata: Metadata = {
 
 const LAST_UPDATED = "February 26, 2026";
 
+function LogoMark({ size = 36 }: { size?: number }) {
+  return (
+    <div style={{ width: size, height: size, background: "#1A3A6A", borderRadius: Math.round(size * 0.25), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(26,58,106,.28)" }}>
+      <svg width={size - 8} height={size - 8} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        <circle cx="17.5" cy="17.5" r="4.5" fill="#1A3A6A" stroke="white" strokeWidth="1.5" />
+        <path d="m15.5 17.5 1.5 1.5 3-3" stroke="white" strokeWidth="1.6" fill="none" />
+      </svg>
+    </div>
+  );
+}
+
 export default function PrivacyPage() {
   return (
     <main style={{ background: "#F5F1E8", minHeight: "100vh", padding: "0 0 80px" }}>
 
       {/* Header */}
       <div style={{ background: "#1A3A6A", padding: "48px 24px 40px", textAlign: "center" }}>
-        <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 24 }}>
-          <div style={{ width: 36, height: 36, background: "rgba(255,255,255,.15)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📖</div>
+        <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 24 }} aria-label="Is it in the Bible? — Home">
+          <LogoMark />
           <span style={{ fontFamily: "Georgia, serif", fontSize: 19, fontWeight: 600, color: "white" }}>
             Is it in the <em style={{ fontStyle: "italic", color: "#7BA8E4" }}>Bible?</em>
           </span>
