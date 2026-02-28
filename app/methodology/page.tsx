@@ -27,6 +27,13 @@ const T = {
   mono:          "'DM Mono', monospace",
 };
 
+const NAV_LINKS = [
+  { label: "About",         href: "/about"          },
+  { label: "Methodology",   href: "/methodology"    },
+  { label: "Browse Topics", href: "/#browse-topics" },
+  { label: "Contact",       href: "/contact"        },
+];
+
 const CLASSIFICATIONS = [
   {
     icon: "📖",
@@ -143,7 +150,6 @@ const STEPS = [
   },
 ];
 
-// Shared LogoMark SVG — matches HomeClient.tsx exactly
 function LogoMark({ size = 36 }: { size?: number }) {
   return (
     <div style={{
@@ -168,7 +174,6 @@ function LogoMark({ size = 36 }: { size?: number }) {
   );
 }
 
-// Inline logo icon for use inside buttons/links on dark backgrounds
 function LogoIcon({ size = 16 }: { size?: number }) {
   return (
     <svg
@@ -191,25 +196,64 @@ export default function MethodologyPage() {
   return (
     <main style={{ background: T.parchment, minHeight: "100vh", fontFamily: T.sans }}>
 
-      {/* ── Nav ── */}
+      {/* ── Nav — matches homepage header ── */}
       <nav style={{
-        background: "white", borderBottom: `1px solid ${T.inkFt}`,
-        padding: "0 24px", height: 64, display: "flex",
-        alignItems: "center", justifyContent: "space-between",
-        position: "sticky", top: 0, zIndex: 100,
+        background: "rgba(245,241,232,0.96)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderBottom: `1px solid ${T.inkFt}`,
+        padding: "0 32px",
+        height: 64,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+        gap: 16,
       }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
           <LogoMark />
-          <span style={{ fontFamily: T.serif, fontSize: 20, color: T.ink, fontWeight: 600 }}>
-            Is it in the <em style={{ color: T.blue }}>Bible?</em>
+          <span style={{ fontFamily: T.serif, fontSize: 19, color: T.ink, fontWeight: 600, letterSpacing: "-.2px" }}>
+            Is it in the <em style={{ fontStyle: "italic", color: T.blue }}>Bible?</em>
           </span>
         </Link>
-        <Link href="/" style={{
-          padding: "8px 18px", borderRadius: 8, background: T.blue,
-          color: "white", textDecoration: "none", fontSize: 13, fontWeight: 600,
-        }}>
-          Search
-        </Link>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {NAV_LINKS.map((l) => (
+            <Link
+              key={l.label}
+              href={l.href}
+              style={{
+                padding: "6px 12px",
+                fontSize: 13.5,
+                fontWeight: 500,
+                color: l.href === "/methodology" ? T.blue : T.inkMid,
+                textDecoration: "none",
+                borderRadius: 8,
+                background: l.href === "/methodology" ? T.blueLt : "transparent",
+                whiteSpace: "nowrap",
+                fontFamily: T.sans,
+              }}
+            >
+              {l.label}
+            </Link>
+          ))}
+          <Link href="/" style={{
+            marginLeft: 6,
+            padding: "7px 16px",
+            background: T.blue,
+            color: "white",
+            fontSize: 13.5,
+            fontWeight: 600,
+            textDecoration: "none",
+            borderRadius: 10,
+            whiteSpace: "nowrap",
+            fontFamily: T.sans,
+          }}>
+            Search
+          </Link>
+        </div>
       </nav>
 
       {/* ── Hero ── */}
@@ -243,8 +287,6 @@ export default function MethodologyPage() {
         <h2 style={{ fontFamily: T.serif, fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 400, color: T.ink, letterSpacing: "-.5px", marginBottom: 24 }}>
           The World English Bible
         </h2>
-
-        {/* ✅ Fixed: responsive auto-fit grid instead of rigid 1fr 1fr */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20, marginBottom: 32 }}>
           {[
             { label: "Modern language", detail: "Written in clear, contemporary English — not King James-era prose." },
@@ -282,7 +324,6 @@ export default function MethodologyPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {STEPS.map((step, i) => (
             <div key={step.number} style={{ display: "flex", gap: 24, paddingBottom: i < STEPS.length - 1 ? 36 : 0 }}>
-              {/* Timeline */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, width: 48 }}>
                 <div style={{
                   width: 48, height: 48, borderRadius: 12,
@@ -298,7 +339,6 @@ export default function MethodologyPage() {
                   <div style={{ width: 2, flex: 1, background: T.inkFt, minHeight: 24, marginTop: 4 }} />
                 )}
               </div>
-              {/* Content */}
               <div style={{ paddingTop: 10 }}>
                 <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 15, color: T.ink, marginBottom: 6 }}>
                   {step.title}
@@ -330,14 +370,12 @@ export default function MethodologyPage() {
           classification system reflects that nuance honestly — rather than forcing
           every answer into a simple yes or no.
         </p>
-
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {CLASSIFICATIONS.map((c) => (
             <div key={c.label} style={{
               borderRadius: 16, background: "white",
               border: `1px solid ${T.inkFt}`, overflow: "hidden",
             }}>
-              {/* Header */}
               <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.inkFt}`, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                 <span style={{
                   display: "inline-flex", alignItems: "center", gap: 8,
@@ -349,7 +387,6 @@ export default function MethodologyPage() {
                 }}>
                   <span>{c.icon}</span> {c.label}
                 </span>
-                {/* Score bar */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 160 }}>
                   <div style={{ flex: 1, height: 6, borderRadius: 100, background: T.inkFt, position: "relative", overflow: "hidden" }}>
                     <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${((c.score - 1) / 4) * 100}%`, background: c.bar, borderRadius: 100 }} />
@@ -357,12 +394,10 @@ export default function MethodologyPage() {
                   <span style={{ fontFamily: T.mono, fontSize: 11, color: T.inkLt, flexShrink: 0 }}>Score {c.score}/5</span>
                 </div>
               </div>
-              {/* Body */}
               <div style={{ padding: "20px 24px" }}>
                 <p style={{ fontFamily: T.serif, fontSize: 15, lineHeight: 1.7, color: T.inkMid, marginBottom: 16 }}>
                   {c.description}
                 </p>
-                {/* Example */}
                 <div style={{ padding: "14px 16px", borderRadius: 10, background: T.parchment, border: `1px solid ${T.inkFt}` }}>
                   <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: T.inkLt, marginBottom: 8 }}>
                     Example
@@ -439,8 +474,9 @@ export default function MethodologyPage() {
         padding: "24px",
         textAlign: "center",
       }}>
+        {/* ✅ FIXED: hardcoded year to avoid hydration mismatch */}
         <p style={{ fontFamily: T.mono, fontSize: 11, color: T.inkLt, margin: 0, letterSpacing: ".06em" }}>
-          © {new Date().getFullYear()} Is it in the Bible? · Built by Anthony Kariuki ·{" "}
+          © 2026 Is it in the Bible? · Built by Anthony Kariuki ·{" "}
           <Link href="/about" style={{ color: T.inkLt }}>About</Link>
           {" · "}
           <Link href="/privacy" style={{ color: T.inkLt }}>Privacy Policy</Link>
