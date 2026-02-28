@@ -106,7 +106,6 @@ const TESTIMONIALS: Testimonial[] = [
   },
 ];
 
-// ✅ Nav links — /about, /methodology, #browse-topics, /contact
 const NAV_LINKS = [
   { label: "About",         href: "/about"         },
   { label: "Methodology",   href: "/methodology"   },
@@ -114,11 +113,11 @@ const NAV_LINKS = [
   { label: "Contact",       href: "/contact"       },
 ];
 
-// ✅ Footer links — /about, /methodology, /privacy, #browse-topics, /contact
 const FOOTER_LINKS = [
   { label: "About",          href: "/about"         },
   { label: "Methodology",    href: "/methodology"   },
   { label: "Privacy Policy", href: "/privacy"       },
+  { label: "Terms of Use",   href: "/terms"         },
   { label: "Browse Topics",  href: "#browse-topics" },
   { label: "Contact",        href: "/contact"       },
 ];
@@ -146,12 +145,45 @@ function ClassChip({ classification, small }: { classification: string; small?: 
   );
 }
 
-// ✅ Ad slots hidden until AdSense approved
+// ✅ Reusable clear (X) button for both search bars
+function ClearButton({ onClear, dark = false }: { onClear: () => void; dark?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClear}
+      aria-label="Clear search"
+      style={{
+        position: "absolute",
+        right: 56,
+        top: "50%",
+        transform: "translateY(-50%)",
+        width: 22,
+        height: 22,
+        borderRadius: "50%",
+        background: dark ? "rgba(255,255,255,.2)" : T.inkFt,
+        border: "none",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 0,
+        transition: "background .15s",
+        zIndex: 2,
+      }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = dark ? "rgba(255,255,255,.35)" : T.inkLt; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = dark ? "rgba(255,255,255,.2)" : T.inkFt; }}
+    >
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={dark ? "white" : T.inkMid} strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+  );
+}
+
 function AdLeaderboard({ id = "ad" }: { id?: string }) {
   return null;
 }
 
-// ✅ HEADER — desktop nav + mobile menu (compact dropdown, not edge-to-edge)
 function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -180,19 +212,13 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
   }, [menuOpen]);
 
   return (
-    <header
-      ref={headerRef}
-      className={`site-header${scrolled ? " scrolled" : ""}`}
-      role="banner"
-      style={{ willChange: "transform, background", position: "relative" }}
-    >
+    <header ref={headerRef} className={`site-header${scrolled ? " scrolled" : ""}`} role="banner" style={{ willChange: "transform, background", position: "relative" }}>
       <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }} aria-label="Is it in the Bible? — Home">
         <LogoMark />
         <span style={{ fontFamily: T.serif, fontSize: 19, fontWeight: 600, color: T.ink, letterSpacing: "-.2px", lineHeight: 1.2, whiteSpace: "nowrap" }}>
           Is it in the <em style={{ fontStyle: "italic", color: T.blue }}>Bible?</em>
         </span>
       </a>
-
       <nav className="desktop-nav" aria-label="Primary navigation">
         {NAV_LINKS.map((l) => (
           <a key={l.label} href={l.href}
@@ -201,15 +227,12 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = T.inkMid; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
           >{l.label}</a>
         ))}
-
         <a href="#search"
           style={{ marginLeft: 6, padding: "7px 16px", background: T.blue, color: "white", fontSize: 13.5, fontWeight: 600, textDecoration: "none", borderRadius: 10, transition: "background .15s", whiteSpace: "nowrap" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = T.blueMid; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = T.blue; }}
         >Search</a>
       </nav>
-
-      {/* Hamburger button */}
       <button className="ham-btn" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label="Toggle navigation" aria-controls="mobile-nav">
         {[0, 1, 2].map((i) => (
           <span key={i} style={{
@@ -221,93 +244,35 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
           }} />
         ))}
       </button>
-
-      {/* ✅ FIXED: Compact dropdown anchored to top-right, not edge-to-edge */}
       {menuOpen && (
-        <nav
-          id="mobile-nav"
-          aria-label="Mobile navigation"
-          style={{
-            position: "absolute",
-            top: "calc(100% + 8px)",
-            right: 16,
-            width: 220,
-            background: T.white,
-            borderRadius: 14,
-            border: `1px solid ${T.inkFt}`,
-            boxShadow: T.shadowLg,
-            overflow: "hidden",
-            zIndex: 100,
-          }}
-        >
+        <nav id="mobile-nav" aria-label="Mobile navigation" style={{ position: "absolute", top: "calc(100% + 8px)", right: 16, width: 220, background: T.white, borderRadius: 14, border: `1px solid ${T.inkFt}`, boxShadow: T.shadowLg, overflow: "hidden", zIndex: 100 }}>
           {NAV_LINKS.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              onClick={() => setMenuOpen(false)}
-              style={{
-                display: "block",
-                padding: "12px 18px",
-                fontSize: 14,
-                fontWeight: 500,
-                color: T.inkMid,
-                textDecoration: "none",
-                fontFamily: T.sans,
-                transition: "background .12s, color .12s",
-              }}
+            <a key={l.label} href={l.href} onClick={() => setMenuOpen(false)}
+              style={{ display: "block", padding: "12px 18px", fontSize: 14, fontWeight: 500, color: T.inkMid, textDecoration: "none", fontFamily: T.sans, transition: "background .12s, color .12s" }}
               onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = T.blueLt; el.style.color = T.blue; }}
               onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "transparent"; el.style.color = T.inkMid; }}
-            >
-              {l.label}
-            </a>
+            >{l.label}</a>
           ))}
-          {/* Divider before action links */}
           <div style={{ height: 1, background: T.inkFt, margin: "2px 0" }} />
-          <a
-            href="#search"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: "block",
-              padding: "12px 18px",
-              fontSize: 14,
-              fontWeight: 600,
-              color: T.blue,
-              textDecoration: "none",
-              fontFamily: T.sans,
-              transition: "background .12s",
-            }}
+          <a href="#search" onClick={() => setMenuOpen(false)}
+            style={{ display: "block", padding: "12px 18px", fontSize: 14, fontWeight: 600, color: T.blue, textDecoration: "none", fontFamily: T.sans, transition: "background .12s" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = T.blueLt; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-          >
-            🔍 Search
-          </a>
-          <a
-            href="https://ko-fi.com/isitinthebible"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: "block",
-              padding: "12px 18px",
-              fontSize: 14,
-              fontWeight: 500,
-              color: T.inkMid,
-              textDecoration: "none",
-              fontFamily: T.sans,
-              transition: "background .12s, color .12s",
-            }}
+          >🔍 Search</a>
+          <a href="https://ko-fi.com/isitinthebible" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}
+            style={{ display: "block", padding: "12px 18px", fontSize: 14, fontWeight: 500, color: T.inkMid, textDecoration: "none", fontFamily: T.sans, transition: "background .12s, color .12s" }}
             onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = T.blueLt; el.style.color = T.blue; }}
             onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "transparent"; el.style.color = T.inkMid; }}
-          >
-            ☕ Donate
-          </a>
+          >☕ Donate</a>
         </nav>
       )}
     </header>
   );
 }
 
+// ✅ HERO — controlled input with clear (X) button
 function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pending: boolean }) {
+  const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -344,22 +309,17 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
               autoComplete="off"
               spellCheck={false}
               disabled={pending}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  const v = inputRef.current?.value?.trim();
-                  if (v) onSearch(v);
-                }
+                if (e.key === "Enter" && value.trim()) onSearch(value.trim());
               }}
             />
-            <button
-              className="search-btn"
-              disabled={pending}
-              aria-label={pending ? "Searching…" : "Search"}
-              onClick={() => {
-                const v = inputRef.current?.value?.trim();
-                if (v) onSearch(v);
-              }}
-            >
+            {value && (
+              <ClearButton onClear={() => { setValue(""); inputRef.current?.focus(); }} />
+            )}
+            <button className="search-btn" disabled={pending} aria-label={pending ? "Searching…" : "Search"}
+              onClick={() => { if (value.trim()) onSearch(value.trim()); }}>
               {pending
                 ? <div style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,.3)", borderTop: "2px solid white", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
                 : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
@@ -372,7 +332,9 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
             {SUGGESTIONS.map((s) => {
               const b = BADGE_CONFIG[s.classification];
               return (
-                <button key={s.label} role="listitem" className="sugg-pill" onClick={() => onSearch(s.label)} aria-label={`Search for ${s.label}`}>
+                <button key={s.label} role="listitem" className="sugg-pill"
+                  onClick={() => { setValue(s.label); onSearch(s.label); }}
+                  aria-label={`Search for ${s.label}`}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: b?.dot || "#999", display: "inline-block", flexShrink: 0 }} aria-hidden="true" />
                   {s.label}
                 </button>
@@ -446,7 +408,6 @@ function HowItWorks() {
 
 function ClassificationLegend() {
   return (
-    // ✅ FIXED: id changed from #about (conflicts with /about page) to #classifications
     <section className="section-sm" style={{ background: T.parchment, borderTop: `1px solid ${T.inkFt}`, borderBottom: `1px solid ${T.inkFt}` }} id="classifications" aria-labelledby="legend-heading">
       <div className="container" style={{ textAlign: "center" }}>
         <div className="section-label">Verdict System</div>
@@ -576,8 +537,11 @@ function TestimonialsSection() {
   );
 }
 
+// ✅ CTA — controlled input with clear (X) button, dark variant
 function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
+  const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
   return (
     <section className="section" style={{ background: `linear-gradient(135deg, ${T.blue} 0%, #1A2E58 100%)`, textAlign: "center", position: "relative", overflow: "hidden" }} aria-labelledby="cta-heading">
       <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 50% 50%, rgba(255,255,255,.04) 0%, transparent 70%)", pointerEvents: "none" }} aria-hidden="true" />
@@ -590,7 +554,6 @@ function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
         <h2 id="cta-heading" style={{ fontFamily: T.serif, fontSize: "clamp(30px, 5vw, 58px)", fontWeight: 300, color: "white", lineHeight: 1.2, marginBottom: 16, letterSpacing: "-1px" }}>
           Ask the AI anything about <em style={{ fontStyle: "italic" }}>Scripture</em>
         </h2>
-        {/* ✅ FIXED: Removed redundant "No account required" — already stated in eyebrow label above */}
         <p style={{ color: "rgba(255,255,255,.7)", fontSize: 15.5, maxWidth: 460, margin: "0 auto 32px", lineHeight: 1.75, fontWeight: 300 }}>
           Every verse. Every book. Analyzed in seconds — just type and discover the truth.
         </p>
@@ -602,26 +565,20 @@ function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
               ref={inputRef}
               type="search"
               className="search-input"
-              // ✅ FIXED: Consistent placeholder wording with hero search
               placeholder="Try: 'The Rapture', 'Purgatory', 'God helps those who help themselves'…"
               style={{ border: "2px solid rgba(255,255,255,.2)", background: "rgba(255,255,255,.12)", color: "white" }}
               autoComplete="off"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  const v = inputRef.current?.value?.trim();
-                  if (v) onSearch(v);
-                }
+                if (e.key === "Enter" && value.trim()) onSearch(value.trim());
               }}
             />
-            <button
-              className="search-btn"
-              style={{ background: "white" }}
-              aria-label="Search"
-              onClick={() => {
-                const v = inputRef.current?.value?.trim();
-                if (v) onSearch(v);
-              }}
-            >
+            {value && (
+              <ClearButton onClear={() => { setValue(""); inputRef.current?.focus(); }} dark />
+            )}
+            <button className="search-btn" style={{ background: "white" }} aria-label="Search"
+              onClick={() => { if (value.trim()) onSearch(value.trim()); }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.blue} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
             </button>
           </div>
@@ -633,21 +590,8 @@ function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
 
 function LoadingOverlay() {
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 999,
-      background: "rgba(26,22,18,.6)",
-      backdropFilter: "blur(4px)",
-      WebkitBackdropFilter: "blur(4px)",
-      display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center", gap: 16,
-    }} aria-busy="true" aria-label="Analyzing…">
-      <div style={{
-        width: 52, height: 52,
-        border: "3px solid rgba(255,255,255,.15)",
-        borderTop: "3px solid white",
-        borderRadius: "50%",
-        animation: "spin .8s linear infinite",
-      }} />
+    <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(26,22,18,.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }} aria-busy="true" aria-label="Analyzing…">
+      <div style={{ width: 52, height: 52, border: "3px solid rgba(255,255,255,.15)", borderTop: "3px solid white", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
       <div style={{ fontFamily: T.serif, fontSize: 20, color: "white", letterSpacing: "-.3px" }}>
         Analyzing <em style={{ fontStyle: "italic", color: "#7BA8E4" }}>Scripture…</em>
       </div>
@@ -658,7 +602,6 @@ function LoadingOverlay() {
   );
 }
 
-// ✅ FOOTER — links to /about, /methodology, /privacy, { label: "Terms of Use", href: "/terms" }, #browse-topics, /contact + ☕ Donate
 function SiteFooter() {
   return (
     <footer style={{ background: T.ink, padding: "48px 24px 28px", textAlign: "center" }} role="contentinfo">
@@ -677,20 +620,15 @@ function SiteFooter() {
               onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "rgba(255,255,255,.5)"; }}
             >{l.label}</a>
           ))}
-          {/* ✅ Donate — footer */}
-          <a
-            href="https://ko-fi.com/isitinthebible"
-            target="_blank"
-            rel="noopener noreferrer"
+          <a href="https://ko-fi.com/isitinthebible" target="_blank" rel="noopener noreferrer"
             style={{ fontSize: 13, color: "rgba(255,255,255,.5)", textDecoration: "none", fontWeight: 500, transition: "color .15s" }}
             onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "white"; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "rgba(255,255,255,.5)"; }}
           >☕ Donate</a>
         </nav>
         <div style={{ width: 40, height: 1, background: "rgba(255,255,255,.1)", margin: "0 auto 20px" }} aria-hidden="true" />
-        {/* ✅ FIXED: "Powered by AI" — model-agnostic */}
         <p style={{ fontFamily: T.mono, fontSize: 11, color: "rgba(255,255,255,.25)", letterSpacing: ".05em", lineHeight: 1.8, margin: 0 }}>
-          © {new Date().getFullYear()} IS IT IN THE BIBLE? — ALL RIGHTS RESERVED<br />
+          © 2026 IS IT IN THE BIBLE? — ALL RIGHTS RESERVED<br />
           Verses from the World English Bible (WEB) — Public Domain · Powered by AI<br />
           Non-denominational · Non-affiliated · No theological bias
         </p>
@@ -768,12 +706,7 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
   return (
     <div style={{ background: T.parchment, minHeight: "100vh" }}>
       <a href="#main-content" className="skip-link">Skip to main content</a>
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}
-      >
+      <div role="status" aria-live="polite" aria-atomic="true" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
         {liveAnnouncement}
       </div>
       <SiteHeader onSearch={handleSearch} />
