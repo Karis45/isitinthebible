@@ -187,15 +187,7 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = T.inkMid; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
           >{l.label}</a>
         ))}
-        {/* ✅ Donate — desktop nav */}
-        <a
-          href="https://ko-fi.com/isitinthebible"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ padding: "6px 12px", fontSize: 13.5, fontWeight: 500, color: T.inkMid, textDecoration: "none", borderRadius: 8, transition: "color .15s, background .15s", whiteSpace: "nowrap" }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = T.blue; (e.currentTarget as HTMLElement).style.background = T.blueLt; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = T.inkMid; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-        >☕ Donate</a>
+        
         <a href="#search"
           style={{ marginLeft: 6, padding: "7px 16px", background: T.blue, color: "white", fontSize: 13.5, fontWeight: 600, textDecoration: "none", borderRadius: 10, transition: "background .15s", whiteSpace: "nowrap" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = T.blueMid; }}
@@ -222,13 +214,7 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
               style={{ borderBottom: i < NAV_LINKS.length - 1 ? `1px solid ${T.inkFt}` : "none" }}
             >{l.label}</a>
           ))}
-          {/* ✅ Donate — mobile hamburger menu */}
-          <a
-            href="https://ko-fi.com/isitinthebible"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => setMenuOpen(false)}
-          >☕ Donate</a>
+          
         </nav>
       )}
     </header>
