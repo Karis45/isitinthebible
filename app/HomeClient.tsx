@@ -89,9 +89,21 @@ const MISQUOTES: Misquote[] = [
 ];
 
 const TESTIMONIALS: Testimonial[] = [
-  { quote: "I've been saying 'God helps those who help themselves' my whole life thinking it was scripture. Mind blown.", author: "Sarah M.",        role: "Sunday School Teacher"   },
-  { quote: "Finally a tool that handles these questions with academic rigor, not just opinion.",                         author: "Pastor David K.", role: "Community Church, Texas" },
-  { quote: "Used this to settle a debate in my theology class. Students were shocked by the results.",                  author: "Prof. A. Wilson", role: "Divinity School"         },
+  {
+    quote: "I quoted 'this too shall pass' in my sermon last year and attributed it to Solomon. A member of my congregation checked this tool mid-service. Humbling — but now I use it before every sermon.",
+    author: "Pastor James O.",
+    role: "Baptist Church, Atlanta"
+  },
+  {
+    quote: "My whole small group assumed 'God helps those who help themselves' was Proverbs. We were all wrong. We spent the next hour actually reading what Proverbs does say. Best Bible study we've had in months.",
+    author: "Miriam T.",
+    role: "Small Group Leader, London"
+  },
+  {
+    quote: "I assigned this to my students as a critical thinking exercise. Half the class was convinced 'cleanliness is next to godliness' was Scripture. The look on their faces when they searched it was priceless.",
+    author: "Dr. R. Mensah",
+    role: "Theology Lecturer, Accra"
+  },
 ];
 
 // ✅ Nav links — /about, /methodology, #browse-topics, /contact
