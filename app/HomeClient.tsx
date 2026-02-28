@@ -16,7 +16,6 @@ interface TrendingItem { label: string; badge: Classification; searches: string;
 interface StatItem    { num: string; label: string; icon: string; }
 interface HowItWorksStep { step: string; title: string; desc: string; icon: string; }
 interface Misquote    { claim: string; verdict: string; classification: Classification; source?: string; note: string; actual?: string; }
-interface Testimonial { quote: string; author: string; role: string; }
 interface BibleResult {
   query: string; classification: Classification; explicitnessScore: number; oneLiner: string;
   originEra: string; closestBiblicalTheme: string; searchPopularity: string; theologicalConsensus: string;
@@ -82,27 +81,50 @@ const HOW_IT_WORKS: HowItWorksStep[] = [
   { step: "03", title: "You Get the Truth",    icon: "💡", desc: "A clear verdict: Directly Stated, Concept Present, Inferred, Church Tradition, or Not in the Bible — with the actual verses to prove it." },
 ];
 
+// ✅ UPDATED: More surprising, lesser-known misquotes
 const MISQUOTES: Misquote[] = [
-  { claim: '"God helps those who help themselves."', verdict: "Cultural — Not in the Bible", classification: "Cultural",  source: "Benjamin Franklin, Poor Richard's Almanack (1736)", note: "Often cited as Scripture. First appears in ancient Greek texts, later popularized by Franklin." },
-  { claim: '"Money is the root of all evil."',       verdict: "Misquote",                   classification: "Inferred",  actual: "1 Timothy 6:10 says 'the love of money is the root of all evil' — a critical distinction.", note: "The word 'love' is commonly omitted, changing the meaning entirely." },
-  { claim: '"This too shall pass."',                 verdict: "Cultural — Not in the Bible", classification: "Cultural",  source: "Persian sufi poets, 13th century", note: "Beloved phrase, but completely absent from Scripture." },
+  {
+    claim: '"This too shall pass."',
+    verdict: "Cultural — Not in the Bible",
+    classification: "Cultural",
+    source: "Persian Sufi poets, 13th century",
+    note: "Beloved phrase, but completely absent from Scripture. Often attributed to King Solomon — he never said it.",
+  },
+  {
+    claim: '"The Lord works in mysterious ways."',
+    verdict: "Cultural — Not in the Bible",
+    classification: "Cultural",
+    source: "William Cowper, hymn 'God Moves in a Mysterious Way' (1773)",
+    note: "One of the most confidently quoted 'Bible verses' — written by an 18th-century English poet, not found anywhere in Scripture.",
+  },
+  {
+    claim: '"Hate the sin, love the sinner."',
+    verdict: "Cultural — Not in the Bible",
+    classification: "Cultural",
+    source: "Attributed to Mahatma Gandhi, 'An Autobiography' (1927)",
+    note: "Widely used as a biblical principle, especially in theological debates. The phrase originates with Gandhi, not the Bible.",
+  },
 ];
 
-const TESTIMONIALS: Testimonial[] = [
+// ✅ NEW: Why It Matters data
+const WHY_IT_MATTERS = [
   {
-    quote: "I quoted 'this too shall pass' in my sermon last year and attributed it to Solomon. A member of my congregation checked this tool mid-service. Humbling — but now I use it before every sermon.",
-    author: "Pastor James O.",
-    role: "Baptist Church, Atlanta"
+    icon: "📊",
+    stat: "53%",
+    label: "The Misquote Problem",
+    detail: "Over half of Americans attribute quotes to the Bible that simply aren't there — often repeating them with complete confidence.",
   },
   {
-    quote: "My whole small group assumed 'God helps those who help themselves' was Proverbs. We were all wrong. We spent the next hour actually reading what Proverbs does say. Best Bible study we've had in months.",
-    author: "Miriam T.",
-    role: "Small Group Leader, London"
+    icon: "📖",
+    stat: "#1",
+    label: "Widely Owned, Rarely Read",
+    detail: "The Bible is the world's best-selling book, yet most people cannot name 5 of its 66 books. Familiarity and knowledge are not the same thing.",
   },
   {
-    quote: "I assigned this to my students as a critical thinking exercise. Half the class was convinced 'cleanliness is next to godliness' was Scripture. The look on their faces when they searched it was priceless.",
-    author: "Dr. R. Mensah",
-    role: "Theology Lecturer, Accra"
+    icon: "⚡",
+    stat: "6×",
+    label: "Why Accuracy Matters",
+    detail: "Misinformation spreads six times faster than corrections online. When false quotes are attributed to Scripture, the damage outlasts the debunk.",
   },
 ];
 
@@ -145,7 +167,6 @@ function ClassChip({ classification, small }: { classification: string; small?: 
   );
 }
 
-// ✅ Reusable clear (X) button for both search bars
 function ClearButton({ onClear, dark = false }: { onClear: () => void; dark?: boolean }) {
   return (
     <button
@@ -153,22 +174,11 @@ function ClearButton({ onClear, dark = false }: { onClear: () => void; dark?: bo
       onClick={onClear}
       aria-label="Clear search"
       style={{
-        position: "absolute",
-        right: 56,
-        top: "50%",
-        transform: "translateY(-50%)",
-        width: 22,
-        height: 22,
-        borderRadius: "50%",
+        position: "absolute", right: 56, top: "50%", transform: "translateY(-50%)",
+        width: 22, height: 22, borderRadius: "50%",
         background: dark ? "rgba(255,255,255,.2)" : T.inkFt,
-        border: "none",
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 0,
-        transition: "background .15s",
-        zIndex: 2,
+        border: "none", cursor: "pointer", display: "flex", alignItems: "center",
+        justifyContent: "center", padding: 0, transition: "background .15s", zIndex: 2,
       }}
       onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = dark ? "rgba(255,255,255,.35)" : T.inkLt; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = dark ? "rgba(255,255,255,.2)" : T.inkFt; }}
@@ -270,7 +280,6 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
   );
 }
 
-// ✅ HERO — controlled input with clear (X) button
 function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pending: boolean }) {
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -477,7 +486,7 @@ function MisquotesSection({ onSearch }: { onSearch: (q: string) => void }) {
             <p style={{ color: T.inkMid, fontSize: 15, lineHeight: 1.8, marginBottom: 28, fontWeight: 300, maxWidth: 440 }}>
               These phrases are <strong style={{ color: T.ink }}>passed down through culture, sermons, and social media</strong> — but they&apos;ve never appeared in any Bible translation.
             </p>
-            <button onClick={() => onSearch("God helps those who help themselves")}
+            <button onClick={() => onSearch("The Lord works in mysterious ways")}
               style={{ padding: "12px 24px", background: T.blue, color: "white", border: "none", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: T.sans, transition: "background .2s" }}
               onMouseEnter={(e) => { (e.target as HTMLElement).style.background = T.blueMid; }}
               onMouseLeave={(e) => { (e.target as HTMLElement).style.background = T.blue; }}
@@ -506,30 +515,32 @@ function MisquotesSection({ onSearch }: { onSearch: (q: string) => void }) {
   );
 }
 
-function TestimonialsSection() {
+// ✅ NEW: Why It Matters — replaces Testimonials
+function WhyItMatters() {
   return (
-    <section className="section" style={{ background: T.parchment, borderTop: `1px solid ${T.inkFt}` }} aria-labelledby="testimonials-heading">
+    <section className="section" style={{ background: T.parchment, borderTop: `1px solid ${T.inkFt}` }} aria-labelledby="why-heading">
       <div className="container">
-        <div className="section-label">What People Say</div>
-        <h2 id="testimonials-heading" className="section-title" style={{ marginBottom: 36 }}>
-          Trusted by pastors, teachers &amp; <em style={{ fontStyle: "italic", color: T.blue }}>seekers</em>
+        <div className="section-label">Why It Matters</div>
+        <h2 id="why-heading" className="section-title" style={{ marginBottom: 12 }}>
+          Biblical literacy is in <em style={{ fontStyle: "italic", color: T.red }}>decline</em>
         </h2>
-        <div className="testimonials-grid" role="list">
-          {TESTIMONIALS.map((t) => (
-            <figure key={t.author} role="listitem" className="card" style={{ padding: "24px 22px" }}>
-              <div style={{ display: "flex", gap: 3, marginBottom: 14 }} aria-label="5 star rating">
-                {[1,2,3,4,5].map((s) => (
-                  <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill="#B8860B" aria-hidden="true">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                  </svg>
-                ))}
+        <p style={{ textAlign: "center", color: T.inkMid, fontSize: 15, maxWidth: 480, margin: "0 auto 44px", lineHeight: 1.8, fontWeight: 300 }}>
+          The problem isn&apos;t malice — it&apos;s assumption. Most people repeat what they&apos;ve heard, never realising it was never written.
+        </p>
+        <div className="how-grid" role="list">
+          {WHY_IT_MATTERS.map((item) => (
+            <div key={item.label} role="listitem" className="card" style={{ textAlign: "center", padding: "36px 28px" }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }} aria-hidden="true">{item.icon}</div>
+              <div style={{ fontFamily: T.serif, fontSize: 52, fontWeight: 600, color: T.blue, lineHeight: 1, letterSpacing: "-2px", marginBottom: 10 }}>
+                {item.stat}
               </div>
-              <blockquote style={{ fontFamily: T.serif, fontSize: 16, fontStyle: "italic", color: T.ink, lineHeight: 1.7, marginBottom: 16 }}>&ldquo;{t.quote}&rdquo;</blockquote>
-              <figcaption>
-                <div style={{ fontWeight: 600, fontSize: 13, color: T.ink }}>{t.author}</div>
-                <div style={{ fontSize: 11.5, color: T.inkLt }}>{t.role}</div>
-              </figcaption>
-            </figure>
+              <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 13, color: T.ink, marginBottom: 10, textTransform: "uppercase", letterSpacing: ".06em" }}>
+                {item.label}
+              </div>
+              <p style={{ fontSize: 14, color: T.inkMid, lineHeight: 1.75, fontWeight: 300, margin: 0 }}>
+                {item.detail}
+              </p>
+            </div>
           ))}
         </div>
       </div>
@@ -537,7 +548,6 @@ function TestimonialsSection() {
   );
 }
 
-// ✅ CTA — controlled input with clear (X) button, dark variant
 function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -653,7 +663,7 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
     setResult(null); setError(null); setPending(true);
     setLiveAnnouncement(`Analyzing "${query}" — reading all 31,102 Bible verses…`);
     try {
-      const res  = await fetch("/api/analyze", {
+      const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ statement: query.trim() }),
@@ -725,7 +735,7 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
         <ClassificationLegend />
         <TrendingTopics onSearch={handleSearch} />
         <MisquotesSection onSearch={handleSearch} />
-        <TestimonialsSection />
+        <WhyItMatters />
         <CTABanner onSearch={handleSearch} />
       </main>
       <SiteFooter />
