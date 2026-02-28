@@ -94,19 +94,21 @@ const TESTIMONIALS: Testimonial[] = [
   { quote: "Used this to settle a debate in my theology class. Students were shocked by the results.",                  author: "Prof. A. Wilson", role: "Divinity School"         },
 ];
 
-// ✅ Nav links — /about, /methodology, #browse-topics
+// ✅ Nav links — /about, /methodology, #browse-topics, /contact
 const NAV_LINKS = [
   { label: "About",         href: "/about"         },
   { label: "Methodology",   href: "/methodology"   },
   { label: "Browse Topics", href: "#browse-topics" },
+  { label: "Contact",       href: "/contact"       },
 ];
 
-// ✅ Footer links — /about, /methodology, /privacy, #browse-topics
+// ✅ Footer links — /about, /methodology, /privacy, #browse-topics, /contact
 const FOOTER_LINKS = [
   { label: "About",          href: "/about"         },
   { label: "Methodology",    href: "/methodology"   },
   { label: "Privacy Policy", href: "/privacy"       },
   { label: "Browse Topics",  href: "#browse-topics" },
+  { label: "Contact",        href: "/contact"       },
 ];
 
 function LogoMark({ size = 36 }: { size?: number }) {
@@ -137,7 +139,7 @@ function AdLeaderboard({ id = "ad" }: { id?: string }) {
   return null;
 }
 
-// ✅ HEADER — desktop nav + mobile menu both include ☕ Donate
+// ✅ HEADER — desktop nav + mobile menu (compact dropdown, not edge-to-edge)
 function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -170,7 +172,7 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
       ref={headerRef}
       className={`site-header${scrolled ? " scrolled" : ""}`}
       role="banner"
-      style={{ willChange: "transform, background" }}
+      style={{ willChange: "transform, background", position: "relative" }}
     >
       <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }} aria-label="Is it in the Bible? — Home">
         <LogoMark />
@@ -187,7 +189,7 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = T.inkMid; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
           >{l.label}</a>
         ))}
-        
+
         <a href="#search"
           style={{ marginLeft: 6, padding: "7px 16px", background: T.blue, color: "white", fontSize: 13.5, fontWeight: 600, textDecoration: "none", borderRadius: 10, transition: "background .15s", whiteSpace: "nowrap" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = T.blueMid; }}
@@ -195,6 +197,7 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
         >Search</a>
       </nav>
 
+      {/* Hamburger button */}
       <button className="ham-btn" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label="Toggle navigation" aria-controls="mobile-nav">
         {[0, 1, 2].map((i) => (
           <span key={i} style={{
@@ -207,14 +210,85 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
         ))}
       </button>
 
+      {/* ✅ FIXED: Compact dropdown anchored to top-right, not edge-to-edge */}
       {menuOpen && (
-        <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation">
-          {NAV_LINKS.map((l, i) => (
-            <a key={l.label} href={l.href} onClick={() => setMenuOpen(false)}
-              style={{ borderBottom: i < NAV_LINKS.length - 1 ? `1px solid ${T.inkFt}` : "none" }}
-            >{l.label}</a>
+        <nav
+          id="mobile-nav"
+          aria-label="Mobile navigation"
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            right: 16,
+            width: 220,
+            background: T.white,
+            borderRadius: 14,
+            border: `1px solid ${T.inkFt}`,
+            boxShadow: T.shadowLg,
+            overflow: "hidden",
+            zIndex: 100,
+          }}
+        >
+          {NAV_LINKS.map((l) => (
+            <a
+              key={l.label}
+              href={l.href}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                display: "block",
+                padding: "12px 18px",
+                fontSize: 14,
+                fontWeight: 500,
+                color: T.inkMid,
+                textDecoration: "none",
+                fontFamily: T.sans,
+                transition: "background .12s, color .12s",
+              }}
+              onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = T.blueLt; el.style.color = T.blue; }}
+              onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "transparent"; el.style.color = T.inkMid; }}
+            >
+              {l.label}
+            </a>
           ))}
-          
+          {/* Divider before action links */}
+          <div style={{ height: 1, background: T.inkFt, margin: "2px 0" }} />
+          <a
+            href="#search"
+            onClick={() => setMenuOpen(false)}
+            style={{
+              display: "block",
+              padding: "12px 18px",
+              fontSize: 14,
+              fontWeight: 600,
+              color: T.blue,
+              textDecoration: "none",
+              fontFamily: T.sans,
+              transition: "background .12s",
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = T.blueLt; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+          >
+            🔍 Search
+          </a>
+          <a
+            href="https://ko-fi.com/isitinthebible"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMenuOpen(false)}
+            style={{
+              display: "block",
+              padding: "12px 18px",
+              fontSize: 14,
+              fontWeight: 500,
+              color: T.inkMid,
+              textDecoration: "none",
+              fontFamily: T.sans,
+              transition: "background .12s, color .12s",
+            }}
+            onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = T.blueLt; el.style.color = T.blue; }}
+            onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "transparent"; el.style.color = T.inkMid; }}
+          >
+            ☕ Donate
+          </a>
         </nav>
       )}
     </header>
@@ -360,7 +434,8 @@ function HowItWorks() {
 
 function ClassificationLegend() {
   return (
-    <section className="section-sm" style={{ background: T.parchment, borderTop: `1px solid ${T.inkFt}`, borderBottom: `1px solid ${T.inkFt}` }} id="about" aria-labelledby="legend-heading">
+    // ✅ FIXED: id changed from #about (conflicts with /about page) to #classifications
+    <section className="section-sm" style={{ background: T.parchment, borderTop: `1px solid ${T.inkFt}`, borderBottom: `1px solid ${T.inkFt}` }} id="classifications" aria-labelledby="legend-heading">
       <div className="container" style={{ textAlign: "center" }}>
         <div className="section-label">Verdict System</div>
         <h2 id="legend-heading" className="section-title" style={{ fontSize: "clamp(22px, 3vw, 32px)", marginBottom: 8 }}>Our 5 Classification Types</h2>
@@ -503,8 +578,9 @@ function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
         <h2 id="cta-heading" style={{ fontFamily: T.serif, fontSize: "clamp(30px, 5vw, 58px)", fontWeight: 300, color: "white", lineHeight: 1.2, marginBottom: 16, letterSpacing: "-1px" }}>
           Ask the AI anything about <em style={{ fontStyle: "italic" }}>Scripture</em>
         </h2>
+        {/* ✅ FIXED: Removed redundant "No account required" — already stated in eyebrow label above */}
         <p style={{ color: "rgba(255,255,255,.7)", fontSize: 15.5, maxWidth: 460, margin: "0 auto 32px", lineHeight: 1.75, fontWeight: 300 }}>
-          Every verse. Every book. Analyzed in seconds. No account required — just type and discover the truth.
+          Every verse. Every book. Analyzed in seconds — just type and discover the truth.
         </p>
         <div role="search" aria-label="Search the Bible">
           <div className="search-wrapper">
@@ -514,7 +590,8 @@ function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
               ref={inputRef}
               type="search"
               className="search-input"
-              placeholder="Type a phrase or doctrine…"
+              // ✅ FIXED: Consistent placeholder wording with hero search
+              placeholder="Try: 'The Rapture', 'Purgatory', 'God helps those who help themselves'…"
               style={{ border: "2px solid rgba(255,255,255,.2)", background: "rgba(255,255,255,.12)", color: "white" }}
               autoComplete="off"
               onKeyDown={(e) => {
@@ -569,7 +646,7 @@ function LoadingOverlay() {
   );
 }
 
-// ✅ FOOTER — links to /about, /methodology, /privacy, #browse-topics + ☕ Donate
+// ✅ FOOTER — links to /about, /methodology, /privacy, #browse-topics, /contact + ☕ Donate
 function SiteFooter() {
   return (
     <footer style={{ background: T.ink, padding: "48px 24px 28px", textAlign: "center" }} role="contentinfo">
@@ -599,9 +676,10 @@ function SiteFooter() {
           >☕ Donate</a>
         </nav>
         <div style={{ width: 40, height: 1, background: "rgba(255,255,255,.1)", margin: "0 auto 20px" }} aria-hidden="true" />
+        {/* ✅ FIXED: "Powered by AI" — model-agnostic */}
         <p style={{ fontFamily: T.mono, fontSize: 11, color: "rgba(255,255,255,.25)", letterSpacing: ".05em", lineHeight: 1.8, margin: 0 }}>
           © {new Date().getFullYear()} IS IT IN THE BIBLE? — ALL RIGHTS RESERVED<br />
-          Verses from the World English Bible (WEB) — Public Domain · Powered by Gemini AI<br />
+          Verses from the World English Bible (WEB) — Public Domain · Powered by AI<br />
           Non-denominational · Non-affiliated · No theological bias
         </p>
       </div>
