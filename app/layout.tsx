@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true },
   },
   verification: {
-    google: "JEa7aG17-rTjqgIz71GruYAPeh4JQTdLVPMRnQ-wuR4",
+    google: "dFMQMjX_hYTl3JQGR4VVVOOMqsglcVxJPVxPCgXxanc",
   },
   icons: {
     icon: [
