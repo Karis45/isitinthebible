@@ -1,7 +1,7 @@
 // app/privacy/page.tsx
 import type { Metadata } from "next";
 
-const SITE_URL  = "https://isitinthebible.com";
+const SITE_URL  = "https://isitinthebible.vercel.app";
 const SITE_NAME = "Is it in the Bible?";
 
 export const metadata: Metadata = {
@@ -106,10 +106,10 @@ export default function PrivacyPage() {
 
           <Section title="12. Contact Us" last>
             <P>If you have questions or concerns about this Privacy Policy, please contact us at:</P>
-            <div style={{ background: "#F5F1E8", borderRadius: 10, padding: "14px 18px", border: "1px solid #D8D0C4", fontFamily: "monospace", fontSize: 13, color: "#4A3F35", lineHeight: 1.8 }}>
+            <div style={{ background: "#F5F1E8", borderRadius: 10, padding: "16px 20px", fontFamily: "monospace", fontSize: 13, color: "#4A3F35", lineHeight: 1.8 }}>
               Is it in the Bible?<br />
               {SITE_URL}<br />
-              contact@isitinthebible.com
+              <a href="/contact" style={{ color: "#1A3A6A", textDecoration: "none" }}>Contact form</a>
             </div>
           </Section>
 

@@ -658,7 +658,7 @@ function LoadingOverlay() {
   );
 }
 
-// ✅ FOOTER — links to /about, /methodology, /privacy, #browse-topics, /contact + ☕ Donate
+// ✅ FOOTER — links to /about, /methodology, /privacy, { label: "Terms of Use", href: "/terms" }, #browse-topics, /contact + ☕ Donate
 function SiteFooter() {
   return (
     <footer style={{ background: T.ink, padding: "48px 24px 28px", textAlign: "center" }} role="contentinfo">
