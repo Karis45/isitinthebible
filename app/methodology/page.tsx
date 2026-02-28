@@ -78,9 +78,9 @@ const CLASSIFICATIONS = [
     description:
       "The claim can be logically derived or theologically deduced from Scripture, but requires interpretation. Reasonable people may disagree.",
     example: {
-      phrase: "Abortion is a sin",
-      reference: "Psalm 139:13-16, Jeremiah 1:5",
-      note: "No verse explicitly addresses abortion, but verses about the sanctity of life in the womb are used to infer this position.",
+      phrase: "Christians should not drink alcohol",
+      reference: "Ephesians 5:18, Romans 14:21",
+      note: "No verse explicitly forbids alcohol — Jesus turned water into wine — but passages on sobriety and not causing others to stumble are used to infer abstinence.",
     },
   },
   {
@@ -474,7 +474,6 @@ export default function MethodologyPage() {
         padding: "24px",
         textAlign: "center",
       }}>
-        {/* ✅ FIXED: hardcoded year to avoid hydration mismatch */}
         <p style={{ fontFamily: T.mono, fontSize: 11, color: T.inkLt, margin: 0, letterSpacing: ".06em" }}>
           © 2026 Is it in the Bible? · Built by Anthony Kariuki ·{" "}
           <Link href="/about" style={{ color: T.inkLt }}>About</Link>
