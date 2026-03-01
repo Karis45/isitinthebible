@@ -81,7 +81,6 @@ const HOW_IT_WORKS: HowItWorksStep[] = [
   { step: "03", title: "You Get the Truth",    icon: "💡", desc: "A clear verdict: Directly Stated, Concept Present, Inferred, Church Tradition, or Not in the Bible — with the actual verses to prove it." },
 ];
 
-// ✅ UPDATED: More surprising, lesser-known misquotes
 const MISQUOTES: Misquote[] = [
   {
     claim: '"This too shall pass."',
@@ -106,7 +105,6 @@ const MISQUOTES: Misquote[] = [
   },
 ];
 
-// ✅ NEW: Why It Matters data
 const WHY_IT_MATTERS = [
   {
     icon: "📊",
@@ -143,6 +141,9 @@ const FOOTER_LINKS = [
   { label: "Browse Topics",  href: "#browse-topics" },
   { label: "Contact",        href: "/contact"       },
 ];
+
+// ── Shared placeholder — short enough to read on 375px mobile ──
+const SEARCH_PLACEHOLDER = "Is it really in the Bible? Ask…";
 
 function LogoMark({ size = 36 }: { size?: number }) {
   return (
@@ -314,7 +315,7 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
               ref={inputRef}
               type="search"
               className="search-input"
-              placeholder="Try: 'The Rapture', 'Purgatory', 'God helps those who help themselves'…"
+              placeholder={SEARCH_PLACEHOLDER}
               autoComplete="off"
               spellCheck={false}
               disabled={pending}
@@ -515,7 +516,6 @@ function MisquotesSection({ onSearch }: { onSearch: (q: string) => void }) {
   );
 }
 
-// ✅ NEW: Why It Matters — replaces Testimonials
 function WhyItMatters() {
   return (
     <section className="section" style={{ background: T.parchment, borderTop: `1px solid ${T.inkFt}` }} aria-labelledby="why-heading">
@@ -575,7 +575,7 @@ function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
               ref={inputRef}
               type="search"
               className="search-input"
-              placeholder="Try: 'The Rapture', 'Purgatory', 'God helps those who help themselves'…"
+              placeholder={SEARCH_PLACEHOLDER}
               style={{ border: "2px solid rgba(255,255,255,.2)", background: "rgba(255,255,255,.12)", color: "white" }}
               autoComplete="off"
               value={value}
