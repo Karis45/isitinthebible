@@ -1,12 +1,9 @@
 // app/methodology/page.tsx
+"use client";
+
 import type { Metadata } from "next";
 import Link from "next/link";
-
-export const metadata: Metadata = {
-  title: "Methodology — Is it in the Bible?",
-  description:
-    "How our AI analyzes 31,102 Bible verses to classify phrases as Directly Stated, Concept Present, Inferred, Church Tradition, or Not in the Bible.",
-};
+import { useState, useRef, useEffect } from "react";
 
 const T = {
   parchment:     "#F5F1E8",
@@ -25,6 +22,7 @@ const T = {
   serif:         "'Cormorant Garamond', Georgia, serif",
   sans:          "'DM Sans', system-ui, sans-serif",
   mono:          "'DM Mono', monospace",
+  shadowLg:      "0 8px 32px rgba(26,22,18,.12), 0 24px 64px rgba(26,22,18,.08)",
 };
 
 const NAV_LINKS = [
@@ -158,13 +156,7 @@ function LogoMark({ size = 36 }: { size?: number }) {
       display: "flex", alignItems: "center", justifyContent: "center",
       flexShrink: 0, boxShadow: "0 2px 8px rgba(26,58,106,.28)",
     }}>
-      <svg
-        width={size - 8} height={size - 8}
-        viewBox="0 0 24 24" fill="none"
-        stroke="white" strokeWidth="1.7"
-        strokeLinecap="round" strokeLinejoin="round"
-        aria-hidden="true"
-      >
+      <svg width={size - 8} height={size - 8} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
         <circle cx="17.5" cy="17.5" r="4.5" fill="#1A3A6A" stroke="white" strokeWidth="1.5" />
@@ -176,14 +168,7 @@ function LogoMark({ size = 36 }: { size?: number }) {
 
 function LogoIcon({ size = 16 }: { size?: number }) {
   return (
-    <svg
-      width={size} height={size}
-      viewBox="0 0 24 24" fill="none"
-      stroke="white" strokeWidth="1.7"
-      strokeLinecap="round" strokeLinejoin="round"
-      style={{ flexShrink: 0 }}
-      aria-hidden="true"
-    >
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true">
       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
       <circle cx="17.5" cy="17.5" r="4.5" fill="#1A3A6A" stroke="white" strokeWidth="1.5" />
@@ -192,12 +177,30 @@ function LogoIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-export default function MethodologyPage() {
-  return (
-    <main style={{ background: T.parchment, minHeight: "100vh", fontFamily: T.sans }}>
+function SiteNav({ activePath }: { activePath: string }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
 
-      {/* ── Nav — matches homepage header ── */}
-      <nav style={{
+  useEffect(() => {
+    if (!menuOpen) return;
+    const h = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") setMenuOpen(false); };
+    document.addEventListener("keydown", h);
+    return () => document.removeEventListener("keydown", h);
+  }, [menuOpen]);
+
+  return (
+    <nav
+      ref={navRef}
+      style={{
         background: "rgba(245,241,232,0.96)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
@@ -211,50 +214,160 @@ export default function MethodologyPage() {
         top: 0,
         zIndex: 100,
         gap: 16,
-      }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
-          <LogoMark />
-          <span style={{ fontFamily: T.serif, fontSize: 19, color: T.ink, fontWeight: 600, letterSpacing: "-.2px" }}>
-            Is it in the <em style={{ fontStyle: "italic", color: T.blue }}>Bible?</em>
-          </span>
-        </Link>
+      }}
+      aria-label="Primary navigation"
+    >
+      <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
+        <LogoMark />
+        <span style={{ fontFamily: T.serif, fontSize: 19, color: T.ink, fontWeight: 600, letterSpacing: "-.2px" }}>
+          Is it in the <em style={{ fontStyle: "italic", color: T.blue }}>Bible?</em>
+        </span>
+      </Link>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+      {/* Desktop nav */}
+      <div className="methodology-desktop-nav" style={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {NAV_LINKS.map((l) => (
+          <Link
+            key={l.label}
+            href={l.href}
+            style={{
+              padding: "6px 12px",
+              fontSize: 13.5,
+              fontWeight: 500,
+              color: l.href === activePath ? T.blue : T.inkMid,
+              textDecoration: "none",
+              borderRadius: 8,
+              background: l.href === activePath ? T.blueLt : "transparent",
+              whiteSpace: "nowrap",
+              fontFamily: T.sans,
+            }}
+          >
+            {l.label}
+          </Link>
+        ))}
+        <Link href="/" style={{
+          marginLeft: 6,
+          padding: "7px 16px",
+          background: T.blue,
+          color: "white",
+          fontSize: 13.5,
+          fontWeight: 600,
+          textDecoration: "none",
+          borderRadius: 10,
+          whiteSpace: "nowrap",
+          fontFamily: T.sans,
+        }}>
+          Search
+        </Link>
+      </div>
+
+      {/* Hamburger button — mobile only */}
+      <button
+        className="methodology-ham-btn"
+        onClick={() => setMenuOpen((o) => !o)}
+        aria-expanded={menuOpen}
+        aria-label="Toggle navigation"
+        aria-controls="methodology-mobile-nav"
+        style={{
+          display: "none",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 4,
+          width: 36,
+          height: 36,
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          padding: 4,
+          borderRadius: 8,
+          flexShrink: 0,
+        }}
+      >
+        {[0, 1, 2].map((i) => (
+          <span key={i} style={{
+            display: "block", width: 18, height: 1.5, background: T.ink, borderRadius: 2,
+            transition: "transform .2s, opacity .2s",
+            ...(menuOpen && i === 0 ? { transform: "rotate(45deg) translate(5px, 4px)" } : {}),
+            ...(menuOpen && i === 1 ? { opacity: 0 } : {}),
+            ...(menuOpen && i === 2 ? { transform: "rotate(-45deg) translate(5px, -4px)" } : {}),
+          }} />
+        ))}
+      </button>
+
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <nav
+          id="methodology-mobile-nav"
+          aria-label="Mobile navigation"
+          style={{
+            position: "absolute", top: "calc(100% + 8px)", right: 16,
+            width: 220, background: "white", borderRadius: 14,
+            border: `1px solid ${T.inkFt}`, boxShadow: T.shadowLg,
+            overflow: "hidden", zIndex: 100,
+          }}
+        >
           {NAV_LINKS.map((l) => (
             <Link
               key={l.label}
               href={l.href}
+              onClick={() => setMenuOpen(false)}
               style={{
-                padding: "6px 12px",
-                fontSize: 13.5,
-                fontWeight: 500,
-                color: l.href === "/methodology" ? T.blue : T.inkMid,
-                textDecoration: "none",
-                borderRadius: 8,
-                background: l.href === "/methodology" ? T.blueLt : "transparent",
-                whiteSpace: "nowrap",
-                fontFamily: T.sans,
+                display: "block", padding: "12px 18px", fontSize: 14,
+                fontWeight: l.href === activePath ? 600 : 500,
+                color: l.href === activePath ? T.blue : T.inkMid,
+                textDecoration: "none", fontFamily: T.sans,
+                background: l.href === activePath ? T.blueLt : "transparent",
+                transition: "background .12s, color .12s",
               }}
             >
               {l.label}
             </Link>
           ))}
-          <Link href="/" style={{
-            marginLeft: 6,
-            padding: "7px 16px",
-            background: T.blue,
-            color: "white",
-            fontSize: 13.5,
-            fontWeight: 600,
-            textDecoration: "none",
-            borderRadius: 10,
-            whiteSpace: "nowrap",
-            fontFamily: T.sans,
-          }}>
-            Search
+          <div style={{ height: 1, background: T.inkFt, margin: "2px 0" }} />
+          <Link
+            href="/"
+            onClick={() => setMenuOpen(false)}
+            style={{
+              display: "block", padding: "12px 18px", fontSize: 14,
+              fontWeight: 600, color: T.blue, textDecoration: "none",
+              fontFamily: T.sans, transition: "background .12s",
+            }}
+          >
+            🔍 Search
           </Link>
-        </div>
-      </nav>
+          <a
+            href="https://ko-fi.com/isitinthebible"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMenuOpen(false)}
+            style={{
+              display: "block", padding: "12px 18px", fontSize: 14,
+              fontWeight: 500, color: T.inkMid, textDecoration: "none",
+              fontFamily: T.sans, transition: "background .12s, color .12s",
+            }}
+          >
+            ☕ Donate
+          </a>
+        </nav>
+      )}
+
+      {/* Inline responsive styles */}
+      <style>{`
+        @media (max-width: 640px) {
+          .methodology-desktop-nav { display: none !important; }
+          .methodology-ham-btn { display: flex !important; }
+        }
+      `}</style>
+    </nav>
+  );
+}
+
+export default function MethodologyPage() {
+  return (
+    <main style={{ background: T.parchment, minHeight: "100vh", fontFamily: T.sans }}>
+
+      <SiteNav activePath="/methodology" />
 
       {/* ── Hero ── */}
       <section style={{
@@ -308,7 +421,6 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      {/* ── Divider ── */}
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
         <div style={{ height: 1, background: T.inkFt }} />
       </div>
@@ -352,7 +464,6 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      {/* ── Divider ── */}
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
         <div style={{ height: 1, background: T.inkFt }} />
       </div>
@@ -372,10 +483,7 @@ export default function MethodologyPage() {
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {CLASSIFICATIONS.map((c) => (
-            <div key={c.label} style={{
-              borderRadius: 16, background: "white",
-              border: `1px solid ${T.inkFt}`, overflow: "hidden",
-            }}>
+            <div key={c.label} style={{ borderRadius: 16, background: "white", border: `1px solid ${T.inkFt}`, overflow: "hidden" }}>
               <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.inkFt}`, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                 <span style={{
                   display: "inline-flex", alignItems: "center", gap: 8,
@@ -418,7 +526,6 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      {/* ── Divider ── */}
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
         <div style={{ height: 1, background: T.inkFt }} />
       </div>
@@ -468,12 +575,7 @@ export default function MethodologyPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{
-        background: T.parchmentDark,
-        borderTop: `1px solid ${T.inkFt}`,
-        padding: "24px",
-        textAlign: "center",
-      }}>
+      <footer style={{ background: T.parchmentDark, borderTop: `1px solid ${T.inkFt}`, padding: "24px", textAlign: "center" }}>
         <p style={{ fontFamily: T.mono, fontSize: 11, color: T.inkLt, margin: 0, letterSpacing: ".06em" }}>
           © 2026 Is it in the Bible? · Built by Anthony Kariuki ·{" "}
           <Link href="/about" style={{ color: T.inkLt }}>About</Link>
