@@ -223,7 +223,7 @@ function SiteHeader({ onSearch }: { onSearch: (q: string) => void }) {
   }, [menuOpen]);
 
   return (
-    <header ref={headerRef} className={`site-header${scrolled ? " scrolled" : ""}`} role="banner" style={{ willChange: "transform, background", position: "relative" }}>
+    <header ref={headerRef} className={`site-header${scrolled ? " scrolled" : ""}`} role="banner">
       <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }} aria-label="Is it in the Bible? — Home">
         <LogoMark />
         <span style={{ fontFamily: T.serif, fontSize: 19, fontWeight: 600, color: T.ink, letterSpacing: "-.2px", lineHeight: 1.2, whiteSpace: "nowrap" }}>
