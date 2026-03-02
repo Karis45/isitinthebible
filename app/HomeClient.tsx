@@ -598,16 +598,123 @@ function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
   );
 }
 
+const LOADING_STEPS = [
+  { icon: "📜", label: "Opening the Scripture…" },
+  { icon: "🔍", label: "Scanning Old Testament…" },
+  { icon: "✝️",  label: "Scanning New Testament…" },
+  { icon: "🤖", label: "Cross-referencing verses…" },
+  { icon: "⚖️", label: "Weighing theological context…" },
+  { icon: "💡", label: "Forming verdict…" },
+];
+
+const LOADING_FACTS = [
+  { quote: '"God helps those who help themselves."', verdict: "❌ Not in the Bible", source: "Benjamin Franklin, 1736" },
+  { quote: '"This too shall pass."',                 verdict: "❌ Not in the Bible", source: "Persian Sufi poets" },
+  { quote: '"Money is the root of all evil."',       verdict: "⚠️ Misquoted",        source: "1 Timothy 6:10 says love of money" },
+  { quote: '"The Lord works in mysterious ways."',   verdict: "❌ Not in the Bible", source: "William Cowper, 1773" },
+  { quote: '"Cleanliness is next to godliness."',    verdict: "❌ Not in the Bible", source: "John Wesley, 1778" },
+];
+
 function LoadingOverlay() {
+  const [step, setStep]           = useState(0);
+  const [count, setCount]         = useState(0);
+  const [factIndex, setFactIndex] = useState(0);
+  const [factVisible, setFactVisible] = useState(true);
+
+  // Advance through steps
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStep((s) => (s < LOADING_STEPS.length - 1 ? s + 1 : s));
+    }, 4200);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Count up verses
+  useEffect(() => {
+    const target = 31102;
+    const duration = 18000; // spread over ~18s
+    const increment = Math.ceil(target / (duration / 60));
+    const interval = setInterval(() => {
+      setCount((c) => {
+        const next = c + increment;
+        return next >= target ? target : next;
+      });
+    }, 60);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Rotate fun facts every 5s with fade
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFactVisible(false);
+      setTimeout(() => {
+        setFactIndex((i) => (i + 1) % LOADING_FACTS.length);
+        setFactVisible(true);
+      }, 400);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fact = LOADING_FACTS[factIndex];
+
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(26,22,18,.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }} aria-busy="true" aria-label="Analyzing…">
-      <div style={{ width: 52, height: 52, border: "3px solid rgba(255,255,255,.15)", borderTop: "3px solid white", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
-      <div style={{ fontFamily: T.serif, fontSize: 20, color: "white", letterSpacing: "-.3px" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(16,14,12,.82)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px" }} aria-busy="true" aria-label="Analyzing…">
+
+      {/* Title */}
+      <div style={{ fontFamily: T.serif, fontSize: "clamp(22px, 4vw, 30px)", color: "white", letterSpacing: "-.3px", marginBottom: 6, textAlign: "center" }}>
         Analyzing <em style={{ fontStyle: "italic", color: "#7BA8E4" }}>Scripture…</em>
       </div>
-      <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: ".14em", textTransform: "uppercase", color: "rgba(255,255,255,.4)" }}>
-        Reading all 31,102 verses
+
+      {/* Verse counter */}
+      <div style={{ fontFamily: T.mono, fontSize: 12, letterSpacing: ".1em", color: "rgba(255,255,255,.45)", marginBottom: 32, textAlign: "center" }}>
+        {count.toLocaleString()} / 31,102 verses scanned
       </div>
+
+      {/* Progress bar */}
+      <div style={{ width: "min(480px, 90vw)", height: 3, background: "rgba(255,255,255,.1)", borderRadius: 3, marginBottom: 32, overflow: "hidden" }}>
+        <div style={{ height: "100%", background: "linear-gradient(90deg, #3A6AC8, #7BA8E4)", borderRadius: 3, width: `${((step + 1) / LOADING_STEPS.length) * 100}%`, transition: "width 0.6s ease" }} />
+      </div>
+
+      {/* Steps */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 36, width: "min(480px, 90vw)" }}>
+        {LOADING_STEPS.map((s, i) => {
+          const done    = i < step;
+          const current = i === step;
+          return (
+            <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 12, opacity: i > step ? 0.25 : 1, transition: "opacity 0.4s" }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: done ? "#1A5C38" : current ? "rgba(255,255,255,.15)" : "rgba(255,255,255,.06)", border: done ? "none" : current ? "1.5px solid rgba(255,255,255,.4)" : "1.5px solid rgba(255,255,255,.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.4s" }}>
+                {done
+                  ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  : <span style={{ fontSize: 12 }}>{s.icon}</span>
+                }
+              </div>
+              <span style={{ fontFamily: T.sans, fontSize: 13.5, color: current ? "white" : done ? "rgba(255,255,255,.55)" : "rgba(255,255,255,.3)", fontWeight: current ? 600 : 400, transition: "color 0.4s" }}>
+                {s.label}
+              </span>
+              {current && <div style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,.2)", borderTop: "2px solid white", borderRadius: "50%", animation: "spin .7s linear infinite", marginLeft: "auto", flexShrink: 0 }} />}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Rotating "Did you know" fact */}
+      <div style={{ width: "min(480px, 90vw)", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 14, padding: "16px 20px", opacity: factVisible ? 1 : 0, transition: "opacity 0.4s" }}>
+        <div style={{ fontFamily: T.mono, fontSize: 9.5, letterSpacing: ".14em", textTransform: "uppercase", color: "rgba(255,255,255,.35)", marginBottom: 8 }}>
+          Did you know?
+        </div>
+        <blockquote style={{ fontFamily: T.serif, fontSize: 15, fontStyle: "italic", color: "rgba(255,255,255,.8)", lineHeight: 1.5, marginBottom: 8 }}>
+          {fact.quote}
+        </blockquote>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+          <span style={{ fontFamily: T.mono, fontSize: 10, color: fact.verdict.startsWith("❌") ? "#F4A0A0" : "#F4D080" }}>
+            {fact.verdict}
+          </span>
+          <span style={{ fontFamily: T.mono, fontSize: 10, color: "rgba(255,255,255,.3)" }}>
+            — {fact.source}
+          </span>
+        </div>
+      </div>
+
     </div>
   );
 }
