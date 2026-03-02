@@ -29,7 +29,7 @@ body {
   width: auto; height: auto;
   clip: auto; overflow: visible;
   padding: 8px 16px; margin: 0;
-  background: #1A3A6A; color: #fff;
+  background: #1A3A6A; color: #272424;
   border-radius: 8px; font-size: 13px;
   z-index: 99999;
 }
