@@ -719,6 +719,68 @@ function LoadingOverlay() {
   );
 }
 
+function InstallBanner() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [show, setShow]                     = useState(false);
+  const [isIOS, setIsIOS]                   = useState(false);
+  const [dismissed, setDismissed]           = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia("(display-mode: standalone)").matches) return;
+    if (sessionStorage.getItem("pwa-banner-dismissed")) return;
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window as any).MSStream;
+    if (ios) { setIsIOS(true); setShow(true); return; }
+    const handler = (e: Event) => { e.preventDefault(); setDeferredPrompt(e); setShow(true); };
+    window.addEventListener("beforeinstallprompt", handler as EventListener);
+    return () => window.removeEventListener("beforeinstallprompt", handler as EventListener);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") setShow(false);
+    setDeferredPrompt(null);
+  };
+
+  const handleDismiss = () => {
+    setShow(false);
+    setDismissed(true);
+    sessionStorage.setItem("pwa-banner-dismissed", "1");
+  };
+
+  if (!show || dismissed) return null;
+
+  return (
+    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 500, padding: "12px 16px 16px", background: T.white, borderTop: `1px solid ${T.inkFt}`, boxShadow: "0 -4px 24px rgba(26,22,18,.10)", display: "flex", alignItems: "center", gap: 12, fontFamily: T.sans }}>
+      <LogoMark size={40} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: T.ink }}>Add to Home Screen</div>
+        <div style={{ fontSize: 12, color: T.inkLt, marginTop: 2 }}>
+          {isIOS
+            ? <span>Tap <strong style={{ color: T.inkMid }}>Share</strong> then <strong style={{ color: T.inkMid }}>&ldquo;Add to Home Screen&rdquo;</strong></span>
+            : "Install for instant one-tap access"
+          }
+        </div>
+      </div>
+      {!isIOS && (
+        <button onClick={handleInstall}
+          style={{ padding: "8px 16px", background: T.blue, color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, fontFamily: T.sans }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = T.blueMid; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = T.blue; }}>
+          Install
+        </button>
+      )}
+      <button onClick={handleDismiss} aria-label="Dismiss"
+        style={{ width: 28, height: 28, borderRadius: "50%", background: T.parchmentDark, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 }}>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={T.inkMid} strokeWidth="2.5" strokeLinecap="round">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 function SiteFooter() {
   return (
     <footer style={{ background: T.ink, padding: "48px 24px 28px", textAlign: "center" }} role="contentinfo">
@@ -846,6 +908,7 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
         <CTABanner onSearch={handleSearch} />
       </main>
       <SiteFooter />
+      <InstallBanner />
     </div>
   );
 }
