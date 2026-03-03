@@ -1,7 +1,6 @@
 // app/about/page.tsx
 "use client";
 
-import type { Metadata } from "next";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 
@@ -24,20 +23,15 @@ const T = {
 };
 
 const NAV_LINKS = [
-  { label: "About",         href: "/about"         },
-  { label: "Methodology",   href: "/methodology"   },
+  { label: "About",         href: "/about"          },
+  { label: "Methodology",   href: "/methodology"    },
   { label: "Browse Topics", href: "/#browse-topics" },
-  { label: "Contact",       href: "/contact"       },
+  { label: "Contact",       href: "/contact"        },
 ];
 
 function LogoMark({ size = 36 }: { size?: number }) {
   return (
-    <div style={{
-      width: size, height: size, background: T.blue,
-      borderRadius: Math.round(size * 0.25),
-      display: "flex", alignItems: "center", justifyContent: "center",
-      flexShrink: 0, boxShadow: "0 2px 8px rgba(26,58,106,.28)",
-    }}>
+    <div style={{ width: size, height: size, background: T.blue, borderRadius: Math.round(size * 0.25), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(26,58,106,.28)" }}>
       <svg width={size - 8} height={size - 8} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
@@ -82,21 +76,7 @@ function SiteNav({ activePath }: { activePath: string }) {
   return (
     <nav
       ref={navRef}
-      style={{
-        background: "rgba(245,241,232,0.96)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderBottom: `1px solid ${T.inkFt}`,
-        padding: "0 32px",
-        height: 64,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        gap: 16,
-      }}
+      style={{ background: "rgba(245,241,232,0.96)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: `1px solid ${T.inkFt}`, padding: "0 32px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100, gap: 16 }}
       aria-label="Primary navigation"
     >
       <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
@@ -109,67 +89,27 @@ function SiteNav({ activePath }: { activePath: string }) {
       {/* Desktop nav */}
       <div className="about-desktop-nav" style={{ display: "flex", alignItems: "center", gap: 2 }}>
         {NAV_LINKS.map((l) => (
-          <Link
-            key={l.label}
-            href={l.href}
-            style={{
-              padding: "6px 12px",
-              fontSize: 13.5,
-              fontWeight: 500,
-              color: l.href === activePath ? T.blue : T.inkMid,
-              textDecoration: "none",
-              borderRadius: 8,
-              background: l.href === activePath ? T.blueLt : "transparent",
-              whiteSpace: "nowrap",
-              fontFamily: T.sans,
-            }}
-          >
+          <Link key={l.label} href={l.href} style={{ padding: "6px 12px", fontSize: 13.5, fontWeight: 500, color: l.href === activePath ? T.blue : T.inkMid, textDecoration: "none", borderRadius: 8, background: l.href === activePath ? T.blueLt : "transparent", whiteSpace: "nowrap", fontFamily: T.sans }}>
             {l.label}
           </Link>
         ))}
-        <Link href="/" style={{
-          marginLeft: 6,
-          padding: "7px 16px",
-          background: T.blue,
-          color: "white",
-          fontSize: 13.5,
-          fontWeight: 600,
-          textDecoration: "none",
-          borderRadius: 10,
-          whiteSpace: "nowrap",
-          fontFamily: T.sans,
-        }}>
+        <Link href="/" style={{ marginLeft: 6, padding: "7px 16px", background: T.blue, color: "white", fontSize: 13.5, fontWeight: 600, textDecoration: "none", borderRadius: 10, whiteSpace: "nowrap", fontFamily: T.sans }}>
           Search
         </Link>
       </div>
 
-      {/* Hamburger button — mobile only */}
+      {/* Hamburger — mobile only */}
       <button
         className="about-ham-btn"
         onClick={() => setMenuOpen((o) => !o)}
         aria-expanded={menuOpen}
         aria-label="Toggle navigation"
         aria-controls="about-mobile-nav"
-        style={{
-          display: "none",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 4,
-          width: 36,
-          height: 36,
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          padding: 4,
-          borderRadius: 8,
-          flexShrink: 0,
-        }}
+        style={{ display: "none", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 4, width: 36, height: 36, background: "transparent", border: "none", cursor: "pointer", padding: 4, borderRadius: 8, flexShrink: 0 }}
       >
         {[0, 1, 2].map((i) => (
           <span key={i} style={{
-            display: "block", width: 18, height: 1.5, background: T.ink, borderRadius: 2,
-            transition: "transform .2s, opacity .2s",
+            display: "block", width: 18, height: 1.5, background: T.ink, borderRadius: 2, transition: "transform .2s, opacity .2s",
             ...(menuOpen && i === 0 ? { transform: "rotate(45deg) translate(5px, 4px)" } : {}),
             ...(menuOpen && i === 1 ? { opacity: 0 } : {}),
             ...(menuOpen && i === 2 ? { transform: "rotate(-45deg) translate(5px, -4px)" } : {}),
@@ -179,62 +119,24 @@ function SiteNav({ activePath }: { activePath: string }) {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <nav
-          id="about-mobile-nav"
-          aria-label="Mobile navigation"
-          style={{
-            position: "absolute", top: "calc(100% + 8px)", right: 16,
-            width: 220, background: "white", borderRadius: 14,
-            border: `1px solid ${T.inkFt}`, boxShadow: T.shadowLg,
-            overflow: "hidden", zIndex: 100,
-          }}
-        >
+        <nav id="about-mobile-nav" aria-label="Mobile navigation" style={{ position: "absolute", top: "calc(100% + 8px)", right: 16, width: 220, background: "white", borderRadius: 14, border: `1px solid ${T.inkFt}`, boxShadow: T.shadowLg, overflow: "hidden", zIndex: 100 }}>
           {NAV_LINKS.map((l) => (
-            <Link
-              key={l.label}
-              href={l.href}
-              onClick={() => setMenuOpen(false)}
-              style={{
-                display: "block", padding: "12px 18px", fontSize: 14,
-                fontWeight: l.href === activePath ? 600 : 500,
-                color: l.href === activePath ? T.blue : T.inkMid,
-                textDecoration: "none", fontFamily: T.sans,
-                background: l.href === activePath ? T.blueLt : "transparent",
-                transition: "background .12s, color .12s",
-              }}
-            >
+            <Link key={l.label} href={l.href} onClick={() => setMenuOpen(false)}
+              style={{ display: "block", padding: "12px 18px", fontSize: 14, fontWeight: l.href === activePath ? 600 : 500, color: l.href === activePath ? T.blue : T.inkMid, textDecoration: "none", fontFamily: T.sans, background: l.href === activePath ? T.blueLt : "transparent", transition: "background .12s, color .12s" }}>
               {l.label}
             </Link>
           ))}
           <div style={{ height: 1, background: T.inkFt, margin: "2px 0" }} />
-          <Link
-            href="/"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: "block", padding: "12px 18px", fontSize: 14,
-              fontWeight: 600, color: T.blue, textDecoration: "none",
-              fontFamily: T.sans, transition: "background .12s",
-            }}
-          >
+          <Link href="/" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "12px 18px", fontSize: 14, fontWeight: 600, color: T.blue, textDecoration: "none", fontFamily: T.sans, transition: "background .12s" }}>
             🔍 Search
           </Link>
-          <a
-            href="https://ko-fi.com/isitinthebible"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: "block", padding: "12px 18px", fontSize: 14,
-              fontWeight: 500, color: T.inkMid, textDecoration: "none",
-              fontFamily: T.sans, transition: "background .12s, color .12s",
-            }}
-          >
+          <a href="https://ko-fi.com/isitinthebible" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}
+            style={{ display: "block", padding: "12px 18px", fontSize: 14, fontWeight: 500, color: T.inkMid, textDecoration: "none", fontFamily: T.sans, transition: "background .12s, color .12s" }}>
             ☕ Donate
           </a>
         </nav>
       )}
 
-      {/* Inline responsive styles */}
       <style>{`
         @media (max-width: 640px) {
           .about-desktop-nav { display: none !important; }
@@ -252,13 +154,7 @@ export default function AboutPage() {
       <SiteNav activePath="/about" />
 
       {/* ── Hero ── */}
-      <section style={{
-        background: `linear-gradient(135deg, ${T.blue} 0%, #0F2347 100%)`,
-        padding: "80px 24px",
-        textAlign: "center",
-        position: "relative",
-        overflow: "hidden",
-      }}>
+      <section style={{ background: `linear-gradient(135deg, ${T.blue} 0%, #0F2347 100%)`, padding: "80px 24px", textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -60, left: -60, width: 240, height: 240, borderRadius: "50%", background: "rgba(255,255,255,.04)" }} />
         <div style={{ position: "absolute", bottom: -40, right: -40, width: 180, height: 180, borderRadius: "50%", background: "rgba(255,255,255,.04)" }} />
         <div style={{ position: "relative", maxWidth: 680, margin: "0 auto" }}>
@@ -339,10 +235,10 @@ export default function AboutPage() {
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginBottom: 48 }}>
           {[
-            { icon: "📖", title: "Rooted in the Text", body: "Every verdict is grounded in all 31,102 verses of the World English Bible — a modern, accurate, fully public-domain translation. No paraphrases. No interpretations. The text itself." },
-            { icon: "⚖️", title: "Non-Denominational", body: "We don't take sides. Whether you're Catholic, Protestant, Orthodox, or simply curious — the analysis is the same. We report what the text says, not what any tradition prefers." },
-            { icon: "🔍", title: "Academically Honest", body: "Some things are directly stated. Others are inferred. Others are pure cultural myths. We distinguish between them clearly, with five precise classifications and a biblical confidence score." },
-            { icon: "🌍", title: "Free for Everyone", body: "Biblical fact-checking shouldn't be locked behind paywalls or gatekept by institutions. This tool is and will always be free to use for anyone with an internet connection." },
+            { icon: "📖", title: "Rooted in the Text",    body: "Every verdict is grounded in all 31,102 verses of the World English Bible — a modern, accurate, fully public-domain translation. No paraphrases. No interpretations. The text itself." },
+            { icon: "⚖️", title: "Non-Denominational",    body: "We don't take sides. Whether you're Catholic, Protestant, Orthodox, or simply curious — the analysis is the same. We report what the text says, not what any tradition prefers." },
+            { icon: "🔍", title: "Academically Honest",   body: "Some things are directly stated. Others are inferred. Others are pure cultural myths. We distinguish between them clearly, with five precise classifications and a biblical confidence score." },
+            { icon: "🌍", title: "Free for Everyone",     body: "Biblical fact-checking shouldn't be locked behind paywalls or gatekept by institutions. This tool is and will always be free to use for anyone with an internet connection." },
           ].map((card) => (
             <div key={card.title} style={{ padding: "24px", borderRadius: 16, background: "white", border: `1px solid ${T.inkFt}` }}>
               <div style={{ fontSize: 28, marginBottom: 12 }}>{card.icon}</div>
@@ -399,7 +295,8 @@ export default function AboutPage() {
               a conviction that Scripture should be accessible and honest.
               If it&apos;s helped you, consider supporting it.
             </p>
-            <a href="https://ko-fi.com/isitinthebible" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 32px", borderRadius: 10, background: "#F5ECD2", color: T.blue, textDecoration: "none", fontFamily: T.sans, fontSize: 15, fontWeight: 700, boxShadow: "0 4px 20px rgba(0,0,0,.2)" }}>
+            <a href="https://ko-fi.com/isitinthebible" target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 32px", borderRadius: 10, background: "#F5ECD2", color: T.blue, textDecoration: "none", fontFamily: T.sans, fontSize: 15, fontWeight: 700, boxShadow: "0 4px 20px rgba(0,0,0,.2)" }}>
               ☕ Buy me a coffee
             </a>
             <p style={{ marginTop: 16, fontSize: 12, color: "rgba(255,255,255,.4)", fontFamily: T.mono }}>
