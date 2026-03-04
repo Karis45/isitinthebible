@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 
 const T = {
@@ -174,21 +175,42 @@ export default function AboutPage() {
 
       {/* ── Founder story ── */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "72px 24px" }}>
+
+        {/* Founder photo + name card */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 52 }}>
+          <div style={{
+            width: 140, height: 140, borderRadius: "50%", overflow: "hidden",
+            border: `4px solid ${T.blue}`,
+            boxShadow: "0 8px 32px rgba(26,58,106,.18)",
+            flexShrink: 0,
+            marginBottom: 18,
+            position: "relative",
+          }}>
+            <Image
+              src="/Anthony.png"
+              alt="Anthony Kariuki — Founder of Is it in the Bible?"
+              fill
+              style={{ objectFit: "cover", objectPosition: "center top" }}
+              priority
+            />
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 18, color: T.ink, marginBottom: 4 }}>
+              Anthony Kariuki
+            </div>
+            <div style={{ fontFamily: T.mono, fontSize: 11, color: T.inkLt, letterSpacing: ".08em", textTransform: "uppercase" }}>
+              Founder, Is it in the Bible?
+            </div>
+          </div>
+        </div>
+
+        {/* Pull quote */}
         <div style={{ borderLeft: `4px solid ${T.blue}`, paddingLeft: 28, marginBottom: 56 }}>
           <p style={{ fontFamily: T.serif, fontSize: "clamp(22px, 3vw, 30px)", color: T.ink, lineHeight: 1.5, fontStyle: "italic", margin: 0 }}>
             &ldquo;I used to quote phrases I was certain were Scripture.
             The day I discovered they weren&apos;t — I felt both embarrassed
             and deeply curious. How many others were doing the same?&rdquo;
           </p>
-          <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: "50%", background: T.blue, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 16, fontWeight: 700, fontFamily: T.serif, flexShrink: 0 }}>
-              AK
-            </div>
-            <div>
-              <div style={{ fontFamily: T.sans, fontWeight: 600, fontSize: 14, color: T.ink }}>Anthony Kariuki</div>
-              <div style={{ fontFamily: T.mono, fontSize: 11, color: T.inkLt, letterSpacing: ".06em" }}>Founder, Is it in the Bible?</div>
-            </div>
-          </div>
         </div>
 
         <div style={{ fontFamily: T.serif, fontSize: 17, lineHeight: 1.9, color: T.inkMid }}>
