@@ -806,7 +806,24 @@ function SiteFooter() {
           >☕ Donate</a>
         </nav>
         <div style={{ width: 40, height: 1, background: "rgba(255,255,255,.1)", margin: "0 auto 20px" }} aria-hidden="true" />
-        <p style={{ fontFamily: T.mono, fontSize: 11, color: "rgba(255,255,255,.25)", letterSpacing: ".05em", lineHeight: 1.8, margin: 0 }}>
+
+{/* Product Hunt Badge */}
+<div style={{ marginBottom: 20 }}>
+  
+    href="https://www.producthunt.com/posts/is-it-in-the-bible"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Find us on Product Hunt"
+  
+    <img
+      src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=is-it-in-the-bible&theme=dark"
+      alt="Is it in the Bible? - Find us on Product Hunt"
+      style={{ width: 200, height: 43 }}
+    />
+  
+</div>
+
+<p style={{ fontFamily: T.mono, fontSize: 11, color: "rgba(255,255,255,.25)", letterSpacing: ".05em", lineHeight: 1.8, margin: 0 }}>
           © 2026 IS IT IN THE BIBLE? — ALL RIGHTS RESERVED<br />
           Verses from the World English Bible (WEB) — Public Domain · Powered by AI<br />
           Non-denominational · Non-affiliated · No theological bias
