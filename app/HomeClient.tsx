@@ -186,7 +186,7 @@ function ClearButton({ onClear, dark = false }: { onClear: () => void; dark?: bo
       onClick={onClear}
       aria-label="Clear search"
       style={{
-        position: "absolute", right: 56, top: "50%", transform: "translateY(-50%)",
+        position: "absolute", right: 116, top: "50%", transform: "translateY(-50%)",
         width: 22, height: 22, borderRadius: "50%",
         background: dark ? "rgba(255,255,255,.2)" : T.inkFt,
         border: "none", cursor: "pointer", display: "flex", alignItems: "center",
