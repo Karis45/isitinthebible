@@ -68,6 +68,124 @@ function ClassBadge({ classification }: { classification: Classification }) {
   );
 }
 
+function ShareButton({ query }: { query: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handle = () => {
+    const url = typeof window !== "undefined"
+      ? `${window.location.origin}?q=${encodeURIComponent(query)}`
+      : "";
+    if (navigator.share) {
+      navigator.share({
+        title: "Is it in the Bible?",
+        text: `I just checked: "${query}" — is it actually in the Bible?`,
+        url,
+      });
+    } else {
+      navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <button
+      onClick={handle}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        padding: "7px 14px", borderRadius: 10,
+        border: `1px solid rgba(255,255,255,.25)`,
+        background: "rgba(255,255,255,.12)", color: "white",
+        fontSize: 12, fontWeight: 600, cursor: "pointer",
+        fontFamily: T.sans, transition: "background .15s",
+        flexShrink: 0,
+      }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,.22)"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,.12)"; }}
+      aria-label="Share this result"
+    >
+      {copied ? "✓ Copied!" : "🔗 Share"}
+    </button>
+  );
+}
+
+// ─── FIX: Inline "search again" footer ───────────────────────────────────────
+function SearchAgainFooter({ onSearch, onClose }: { onSearch: (q: string) => void; onClose: () => void }) {
+  const [value, setValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = () => {
+    if (!value.trim()) return;
+    onClose();
+    // Small delay so modal can close before new search fires
+    setTimeout(() => onSearch(value.trim()), 50);
+  };
+
+  return (
+    <div style={{
+      padding: "14px 20px",
+      background: T.parchmentDark,
+      borderTop: `1px solid ${T.inkFt}`,
+      flexShrink: 0,
+    }}>
+      {/* Search again row */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+        <div style={{ position: "relative", flex: 1 }}>
+          <label htmlFor="modal-search-again" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
+            Search again
+          </label>
+          <input
+            id="modal-search-again"
+            ref={inputRef}
+            type="search"
+            autoComplete="off"
+            placeholder="Search another phrase or belief…"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
+            style={{
+              width: "100%", height: 40, padding: "0 12px",
+              borderRadius: 10, border: `1.5px solid ${T.inkFt}`,
+              background: T.white, fontFamily: T.sans, fontSize: 13.5,
+              color: T.ink, outline: "none", boxSizing: "border-box",
+              transition: "border-color .15s",
+            }}
+            onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = T.blue; }}
+            onBlur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = T.inkFt; }}
+          />
+        </div>
+        <button
+          onClick={handleSubmit}
+          disabled={!value.trim()}
+          style={{
+            height: 40, padding: "0 16px", borderRadius: 10,
+            border: "none", background: value.trim() ? T.blue : T.inkFt,
+            color: "white", fontFamily: T.sans, fontSize: 13, fontWeight: 600,
+            cursor: value.trim() ? "pointer" : "default",
+            transition: "background .15s", flexShrink: 0,
+            display: "flex", alignItems: "center", gap: 6,
+          }}
+          aria-label="Search"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <span>Search</span>
+        </button>
+      </div>
+      {/* Bottom row: attribution + close */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ fontFamily: T.mono, fontSize: 10, color: T.inkLt, letterSpacing: ".08em" }}>📖 World English Bible · Public Domain</div>
+        <button
+          className="footer-close"
+          onClick={onClose}
+          style={{ minHeight: 36, padding: "0 14px", border: `1px solid ${T.inkFt}`, borderRadius: 10, background: "transparent", fontFamily: T.sans, fontSize: 13, fontWeight: 500, color: T.inkMid, cursor: "pointer", transition: "border-color .15s" }}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 interface ResultsModalProps {
   result: BibleResult | null;
@@ -150,7 +268,10 @@ export default function ResultsModal({ result, onClose, onSearch }: ResultsModal
             <div style={{ position:"absolute", top:-40, right:-40, width:160, height:160, borderRadius:"50%", background:"rgba(255,255,255,.04)", pointerEvents:"none" }} />
             <div style={{ position:"relative", zIndex:1 }}>
               <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12, marginBottom:14 }}>
-                <ClassBadge classification={result.classification} />
+                <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                  <ClassBadge classification={result.classification} />
+                  <ShareButton query={result.query} />
+                </div>
                 <button className="close-btn" onClick={onClose} aria-label="Close results" style={{ width:36, height:36, borderRadius:8, border:"none", background:"rgba(255,255,255,.12)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background .15s" }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
                 </button>
@@ -271,7 +392,7 @@ export default function ResultsModal({ result, onClose, onSearch }: ResultsModal
                   {result.relatedTopics.map((t) => {
                     const rb = BADGE_CONFIG[t.classification] ?? BADGE_CONFIG["Cultural"];
                     return (
-                      <button key={t.query} className="related-pill" onClick={() => { onClose(); onSearch(t.query); }} style={{ padding:"9px 14px", border:`1px solid ${T.inkFt}`, borderRadius:100, background:T.parchment, cursor:"pointer", fontFamily:T.sans, transition:"border-color .15s, background .15s" }}>
+                      <button key={t.query} className="related-pill" onClick={() => { onClose(); setTimeout(() => onSearch(t.query), 50); }} style={{ padding:"9px 14px", border:`1px solid ${T.inkFt}`, borderRadius:100, background:T.parchment, cursor:"pointer", fontFamily:T.sans, transition:"border-color .15s, background .15s" }}>
                         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                           <span style={{ width:6, height:6, borderRadius:"50%", background:rb.dot, flexShrink:0, display:"inline-block" }} />
                           <span style={{ fontSize:13, color:T.ink, fontWeight:500 }}>{t.query}</span>
@@ -285,11 +406,8 @@ export default function ResultsModal({ result, onClose, onSearch }: ResultsModal
 
           </div>
 
-          {/* ── Footer ── */}
-          <div style={{ padding:"12px 20px", background:T.parchmentDark, borderTop:`1px solid ${T.inkFt}`, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexShrink:0 }}>
-            <div style={{ fontFamily:T.mono, fontSize:10, color:T.inkLt, letterSpacing:".08em" }}>📖 World English Bible · Public Domain</div>
-            <button className="footer-close" onClick={onClose} style={{ minHeight:44, padding:"0 16px", border:`1px solid ${T.inkFt}`, borderRadius:10, background:"transparent", fontFamily:T.sans, fontSize:13, fontWeight:500, color:T.inkMid, cursor:"pointer", transition:"border-color .15s" }}>Close</button>
-          </div>
+          {/* ── Footer with inline search ── */}
+          <SearchAgainFooter onSearch={onSearch} onClose={onClose} />
 
         </div>
       </div>
