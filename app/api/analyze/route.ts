@@ -1,20 +1,106 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { initializeApp, getApps, cert } from "firebase-admin/app";
+import { getFirestore, Timestamp } from "firebase-admin/firestore";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Firebase Admin — initialise once across hot reloads
+// ─────────────────────────────────────────────────────────────────────────────
+function getDb() {
+  if (!getApps().length) {
+    initializeApp({
+      credential: cert({
+        projectId:   process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        // Next.js env vars can't contain real newlines — replace escaped ones
+        privateKey:  process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      }),
+    });
+  }
+  return getFirestore();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cache helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Normalise a query to a stable Firestore document ID:
+//   "The Rapture" → "the-rapture"
+//   "God helps those who help themselves" → "god-helps-those-who-help-themselves"
+function cacheKey(query: string): string {
+  return query
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")   // non-alphanumeric → hyphen
+    .replace(/^-+|-+$/g, "")        // strip leading/trailing hyphens
+    .slice(0, 200);                  // Firestore doc ID limit
+}
+
+const CACHE_COLLECTION = "query_cache";
+// Re-check cached results after 30 days so scholarship stays fresh
+const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+async function getCached(key: string): Promise<BibleResult | null> {
+  try {
+    const db  = getDb();
+    const doc = await db.collection(CACHE_COLLECTION).doc(key).get();
+    if (!doc.exists) return null;
+
+    const data = doc.data();
+    if (!data) return null;
+
+    // Honour TTL
+    const cachedAt: Timestamp = data.cachedAt;
+    if (Date.now() - cachedAt.toMillis() > CACHE_TTL_MS) {
+      // Stale — delete in the background, don't block the response
+      doc.ref.delete().catch(() => {});
+      return null;
+    }
+
+    return data.result as BibleResult;
+  } catch (err) {
+    // Never let a cache read failure block the real request
+    console.warn("[cache] Read error:", err);
+    return null;
+  }
+}
+
+async function setCached(key: string, result: BibleResult): Promise<void> {
+  try {
+    const db = getDb();
+    await db.collection(CACHE_COLLECTION).doc(key).set({
+      result,
+      cachedAt:    Timestamp.now(),
+      queryRaw:    result.query,   // handy for browsing in Firebase console
+      hitCount:    0,
+    });
+  } catch (err) {
+    // Cache write failures are non-fatal
+    console.warn("[cache] Write error:", err);
+  }
+}
+
+// Increment hit counter in the background — useful for knowing which queries
+// are most popular (feeds future "Trending" section if you want real data)
+async function incrementHits(key: string): Promise<void> {
+  try {
+    const db = getDb();
+    await db.collection(CACHE_COLLECTION).doc(key).update({
+      hitCount: require("firebase-admin/firestore").FieldValue.increment(1),
+      lastHitAt: Timestamp.now(),
+    });
+  } catch {
+    // Silently ignore — this is just analytics
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Extract JSON utility (handles thinking blocks, markdown fences, stray text)
 // ─────────────────────────────────────────────────────────────────────────────
 function extractJSON(text: string): string {
-  // Remove markdown code fences
   let cleaned = text.replace(/^```[\w]*\n?|\n?```$/g, "");
-  
-  // Find JSON object
   const match = cleaned.match(/\{[\s\S]*\}/);
-  if (match) {
-    return match[0];
-  }
-  
-  // If no match, return original (will fail gracefully in JSON.parse)
+  if (match) return match[0];
   return cleaned;
 }
 
@@ -24,7 +110,7 @@ function extractJSON(text: string): string {
 const rateMap = new Map<string, { count: number; reset: number }>();
 
 function isRateLimited(ip: string): boolean {
-  const now = Date.now();
+  const now   = Date.now();
   const entry = rateMap.get(ip);
   if (!entry || now > entry.reset) {
     rateMap.set(ip, { count: 1, reset: now + 60_000 });
@@ -35,7 +121,6 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
-// Prevent the map from growing indefinitely on long-running instances
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of rateMap.entries()) {
@@ -44,7 +129,7 @@ setInterval(() => {
 }, 5 * 60_000);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Types (must match page.tsx)
+// Types
 // ─────────────────────────────────────────────────────────────────────────────
 type Classification =
   | "Directly Stated"
@@ -54,21 +139,21 @@ type Classification =
   | "Church Tradition";
 
 interface BibleResult {
-  query: string;
-  classification: Classification;
-  explicitnessScore: number;
-  oneLiner: string;
-  originEra: string;
+  query:                string;
+  classification:       Classification;
+  explicitnessScore:    number;
+  oneLiner:             string;
+  originEra:            string;
   closestBiblicalTheme: string;
-  searchPopularity: string;
+  searchPopularity:     string;
   theologicalConsensus: string;
-  timeline: { year: string; label: string; detail: string }[];
-  verses: { ref: string; text: string; context: string }[];
-  misquoteWhat: string;
-  misquoteReality: string;
-  analysis: string;
-  confidenceNote: string;
-  relatedTopics: { query: string; classification: Classification }[];
+  timeline:             { year: string; label: string; detail: string }[];
+  verses:               { ref: string; text: string; context: string }[];
+  misquoteWhat:         string;
+  misquoteReality:      string;
+  analysis:             string;
+  confidenceNote:       string;
+  relatedTopics:        { query: string; classification: Classification }[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -145,7 +230,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
+    const body      = await req.json();
     const statement: string = (body?.statement ?? "").trim();
 
     if (!statement) {
@@ -169,24 +254,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // ── Cache check ─────────────────────────────────────────────────────────
+    const key    = cacheKey(statement);
+    const cached = await getCached(key);
+
+    if (cached) {
+      // Fire-and-forget hit counter — don't await
+      incrementHits(key);
+      // Return with a header so you can verify caching is working in DevTools
+      return NextResponse.json(
+        { result: cached },
+        { headers: { "X-Cache": "HIT" } }
+      );
+    }
+
+    // ── Call Gemini ──────────────────────────────────────────────────────────
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       generationConfig: {
-        temperature: 0.4,
-        topP: 0.95,
-        maxOutputTokens: 4096,
+        temperature:      0.4,
+        topP:             0.95,
+        maxOutputTokens:  4096,
         responseMimeType: "application/json",
       },
     });
 
-    const prompt = `${SYSTEM_PROMPT}\n\nAnalyze this for biblical accuracy: "${statement}"`;
-
+    const prompt      = `${SYSTEM_PROMPT}\n\nAnalyze this for biblical accuracy: "${statement}"`;
     const geminiResult = await model.generateContent(prompt);
     const responseText = geminiResult.response.text();
 
-    // ✅ Uses shared extractJSON — handles thinking blocks, markdown fences,
-    //    and stray text. Replaces the old local version which used a regex
-    //    that was equally fragile against thinking model output.
     const parsed: BibleResult = JSON.parse(extractJSON(responseText));
 
     // Validate required fields
@@ -195,15 +291,20 @@ export async function POST(req: NextRequest) {
       "verses", "timeline", "relatedTopics",
     ];
     for (const field of required) {
-      if (parsed[field] === undefined) {
-        throw new Error(`Missing field: ${field}`);
-      }
+      if (parsed[field] === undefined) throw new Error(`Missing field: ${field}`);
     }
 
     // Clamp score
     parsed.explicitnessScore = Math.max(1, Math.min(5, Math.round(parsed.explicitnessScore)));
 
-    return NextResponse.json({ result: parsed });
+    // ── Write to cache (non-blocking) ────────────────────────────────────────
+    setCached(key, parsed).catch(() => {});
+
+    return NextResponse.json(
+      { result: parsed },
+      { headers: { "X-Cache": "MISS" } }
+    );
+
   } catch (err: unknown) {
     console.error("[/api/analyze] Error:", err);
 
