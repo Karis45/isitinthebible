@@ -38,7 +38,6 @@ const jsonLd = {
         { "@type": "ListItem", position: 2, name: "Methodology", item: `${SITE_URL}/methodology` },
       ],
     },
-    // FAQPage — the methodology Q&As are exactly what AI answer engines want
     {
       "@type":      "FAQPage",
       "@id":        `${SITE_URL}/methodology#faq`,
@@ -56,7 +55,7 @@ const jsonLd = {
           name:    "How does the AI biblical fact-checker work?",
           acceptedAnswer: {
             "@type": "Answer",
-            text:    "When you submit a query, our AI cross-references it against all 31,102 verses of the World English Bible in real time, applying a five-tier classification framework: Directly Stated, Concept Present, Inferred, Church Tradition, or Not in the Bible. It returns relevant verses, a confidence score of 1–5, a historical timeline, and a full scholarly analysis.",
+            text:    "When you submit a query, our AI cross-references it against all 31,102 verses of the World English Bible in real time, applying a five-tier classification framework: Directly Stated, Concept Present, Inferred, Church Tradition, or Not in the Bible. It returns relevant verses, a confidence score of 1-5, a historical timeline, and a full scholarly analysis.",
           },
         },
         {
@@ -101,20 +100,19 @@ const jsonLd = {
         },
       ],
     },
-    // HowTo schema — describes the process step by step
     {
-      "@type":       "HowTo",
-      "@id":         `${SITE_URL}/methodology#howto`,
-      name:          "How to fact-check a Bible quote or belief",
-      description:   "Use AI to verify whether a phrase, doctrine, or belief actually appears in the Bible.",
-      totalTime:     "PT10S",
+      "@type":      "HowTo",
+      "@id":        `${SITE_URL}/methodology#howto`,
+      name:         "How to fact-check a Bible quote or belief",
+      description:  "Use AI to verify whether a phrase, doctrine, or belief actually appears in the Bible.",
+      totalTime:    "PT10S",
       step: [
-        { "@type": "HowToStep", position: 1, name: "Submit your query",        text: "Type any phrase, doctrine, belief, or saying — up to 500 characters." },
-        { "@type": "HowToStep", position: 2, name: "AI analysis begins",       text: "Our AI applies a rigorous academic framework developed specifically for Scripture." },
-        { "@type": "HowToStep", position: 3, name: "All 31,102 verses scanned", text: "The AI cross-references your query against the complete World English Bible." },
-        { "@type": "HowToStep", position: 4, name: "Classification assigned",  text: "One of five classifications is assigned with a confidence score of 1–5." },
-        { "@type": "HowToStep", position: 5, name: "Evidence gathered",        text: "Relevant verses, historical timeline, and contextual explanations are compiled." },
-        { "@type": "HowToStep", position: 6, name: "Verdict returned",         text: "You receive classification, key verses, historical timeline, and full scholarly analysis." },
+        { "@type": "HowToStep", position: 1, name: "Submit your query",          text: "Type any phrase, doctrine, belief, or saying — up to 500 characters." },
+        { "@type": "HowToStep", position: 2, name: "AI analysis begins",         text: "Our AI applies a rigorous academic framework developed specifically for Scripture." },
+        { "@type": "HowToStep", position: 3, name: "All 31,102 verses scanned",  text: "The AI cross-references your query against the complete World English Bible." },
+        { "@type": "HowToStep", position: 4, name: "Classification assigned",    text: "One of five classifications is assigned with a confidence score of 1-5." },
+        { "@type": "HowToStep", position: 5, name: "Evidence gathered",          text: "Relevant verses, historical timeline, and contextual explanations are compiled." },
+        { "@type": "HowToStep", position: 6, name: "Verdict returned",           text: "You receive classification, key verses, historical timeline, and full scholarly analysis." },
       ],
     },
   ],
