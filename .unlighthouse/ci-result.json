@@ -1,0 +1,50 @@
+[
+  {
+    "path": "/",
+    "score": 0.82,
+    "performance": 0.58,
+    "accessibility": 0.97,
+    "best-practices": 0.73,
+    "seo": 1
+  },
+  {
+    "path": "/about",
+    "score": 0.9,
+    "performance": 0.89,
+    "accessibility": 0.96,
+    "best-practices": 0.73,
+    "seo": 1
+  },
+  {
+    "path": "/contact",
+    "score": 0.82,
+    "performance": 0.58,
+    "accessibility": 0.96,
+    "best-practices": 0.73,
+    "seo": 1
+  },
+  {
+    "path": "/methodology",
+    "score": 0.82,
+    "performance": 0.59,
+    "accessibility": 0.95,
+    "best-practices": 0.73,
+    "seo": 1
+  },
+  {
+    "path": "/privacy",
+    "score": 0.82,
+    "performance": 0.59,
+    "accessibility": 0.96,
+    "best-practices": 0.73,
+    "seo": 1
+  },
+  {
+    "path": "/terms",
+    "score": 0.83,
+    "performance": 0.64,
+    "accessibility": 0.95,
+    "best-practices": 0.73,
+    "seo": 1
+  }
+]
