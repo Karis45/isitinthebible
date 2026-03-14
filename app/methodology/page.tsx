@@ -106,7 +106,7 @@ const jsonLd = {
       "@type":       "HowTo",
       "@id":         `${SITE_URL}/methodology#howto`,
       name:          "How to fact-check a Bible quote or belief",
-      description":  "Use AI to verify whether a phrase, doctrine, or belief actually appears in the Bible.",
+      description:   "Use AI to verify whether a phrase, doctrine, or belief actually appears in the Bible.",
       totalTime:     "PT10S",
       step: [
         { "@type": "HowToStep", position: 1, name: "Submit your query",        text: "Type any phrase, doctrine, belief, or saying — up to 500 characters." },
