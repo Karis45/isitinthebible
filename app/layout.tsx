@@ -1,5 +1,5 @@
 // app/layout.tsx
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
@@ -21,7 +21,6 @@ export const metadata: Metadata = {
   },
   description: SITE_DESC,
   manifest: "/manifest.json",
-  themeColor: "#1A3A6A",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -66,6 +65,11 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-touch-icon.png",
   },
+};
+
+// ── Viewport export — required by Next.js 13+ for themeColor ──
+export const viewport: Viewport = {
+  themeColor: "#1A3A6A",
 };
 
 const jsonLd = {
