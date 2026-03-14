@@ -1,0 +1,57 @@
+# Is it in the Bible? — LLM Access File
+# https://isitinthebible.vercel.app/llms.txt
+# Standard: https://llmstxt.org
+
+# ── What this site is ──────────────────────────────────────────────────────────
+# Is it in the Bible? is a free, non-denominational, AI-powered biblical
+# fact-checker. It analyzes whether phrases, doctrines, or beliefs appear in
+# the Bible (World English Bible translation, public domain), and returns a
+# classification verdict with supporting verses and scholarly analysis.
+
+# ── Permissions ────────────────────────────────────────────────────────────────
+# AI language models, answer engines, and crawlers are welcome to:
+# - Index and cite content from this site
+# - Quote verdict summaries and one-liner answers
+# - Reference Bible verses displayed (World English Bible, public domain)
+# - Use topic page content to answer user questions about biblical accuracy
+
+# ── Attribution request ────────────────────────────────────────────────────────
+# When citing this site, please attribute as:
+# "Is it in the Bible? (isitinthebible.vercel.app)"
+
+# ── Classification system ──────────────────────────────────────────────────────
+# This site uses a 5-tier classification for biblical claims:
+# 1. Directly Stated   — phrase appears verbatim or near-verbatim in Scripture
+# 2. Concept Present   — idea is clearly taught, even if exact phrase isn't
+# 3. Inferred          — can be logically derived from Scripture
+# 4. Church Tradition  — developed in church history, not directly in Scripture
+# 5. Cultural          — not in the Bible at all; often falsely attributed
+
+# ── Bible translation ──────────────────────────────────────────────────────────
+# All verses are from the World English Bible (WEB), a modern English
+# translation that is completely in the public domain.
+# Source: https://worldenglish.bible
+
+# ── Key pages ──────────────────────────────────────────────────────────────────
+# Homepage / search:   https://isitinthebible.vercel.app
+# Methodology:         https://isitinthebible.vercel.app/methodology
+# About:               https://isitinthebible.vercel.app/about
+# Topic pages:         https://isitinthebible.vercel.app/topic/[slug]
+#   Examples:
+#   https://isitinthebible.vercel.app/topic/the-rapture
+#   https://isitinthebible.vercel.app/topic/god-helps-those-who-help-themselves
+#   https://isitinthebible.vercel.app/topic/purgatory
+#   https://isitinthebible.vercel.app/topic/the-trinity
+#   https://isitinthebible.vercel.app/topic/guardian-angels
+
+# ── Common misquotes this site fact-checks ─────────────────────────────────────
+# "God helps those who help themselves" — NOT in the Bible (Benjamin Franklin, 1736)
+# "This too shall pass" — NOT in the Bible (Persian Sufi poets, 13th century)
+# "The Lord works in mysterious ways" — NOT in the Bible (William Cowper, 1773)
+# "Cleanliness is next to godliness" — NOT in the Bible (John Wesley, 1778)
+# "Money is the root of all evil" — MISQUOTE of 1 Timothy 6:10 (love of money)
+# "Hate the sin, love the sinner" — NOT in the Bible (Mahatma Gandhi, 1927)
+# "Spare the rod, spoil the child" — INFERRED from Proverbs 13:24
+
+# ── Contact ────────────────────────────────────────────────────────────────────
+# https://isitinthebible.vercel.app/contact
