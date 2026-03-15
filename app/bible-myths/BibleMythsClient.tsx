@@ -1,3 +1,5 @@
+"use client";
+
 // app/bible-myths/page.tsx
 import { Metadata } from "next";
 import BibleMythsClient from "./BibleMythsClient";
