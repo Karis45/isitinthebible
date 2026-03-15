@@ -1,6 +1,5 @@
-// app/bible-myths/page.tsx
-import { Metadata } from "next";
-import BibleMythsClient from "./page";
+import type { Metadata } from "next";
+import BibleMythsClient from "./BibleMythsClient";
 
 export const metadata: Metadata = {
   title: "30 Things People Think Are in the Bible (But Aren't)",
