@@ -47,6 +47,16 @@ const BADGE_CONFIG: Record<Classification, { bg: string; text: string; border: s
   "Church Tradition": { bg: "#F3EEF8", text: "#4A1A7A", border: "#C8A8E8", dot: "#4A1A7A", label: "Church Tradition", icon: "⛪" },
 };
 
+// ─── Slug helper (must match cacheKey in route.ts) ────────────────────────────
+function queryToSlug(query: string): string {
+  return query
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 200);
+}
+
 const scoreToWidth = (s: number) => `${((s - 1) / 4) * 88 + 6}%`;
 const scoreToColor = (s: number) => {
   if (s <= 1) return "#E88080";
@@ -72,8 +82,9 @@ function ShareButton({ query }: { query: string }) {
   const [copied, setCopied] = useState(false);
 
   const handle = () => {
+    // Use /topic/ URL for sharing — clean, SEO-friendly, directly linkable
     const url = typeof window !== "undefined"
-      ? `${window.location.origin}?q=${encodeURIComponent(query)}`
+      ? `${window.location.origin}/topic/${queryToSlug(query)}`
       : "";
     if (navigator.share) {
       navigator.share({
@@ -109,7 +120,7 @@ function ShareButton({ query }: { query: string }) {
   );
 }
 
-// ─── FIX: Inline "search again" footer ───────────────────────────────────────
+// ─── Inline "search again" footer ─────────────────────────────────────────────
 function SearchAgainFooter({ onSearch, onClose }: { onSearch: (q: string) => void; onClose: () => void }) {
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -117,7 +128,6 @@ function SearchAgainFooter({ onSearch, onClose }: { onSearch: (q: string) => voi
   const handleSubmit = () => {
     if (!value.trim()) return;
     onClose();
-    // Small delay so modal can close before new search fires
     setTimeout(() => onSearch(value.trim()), 50);
   };
 
@@ -128,7 +138,6 @@ function SearchAgainFooter({ onSearch, onClose }: { onSearch: (q: string) => voi
       borderTop: `1px solid ${T.inkFt}`,
       flexShrink: 0,
     }}>
-      {/* Search again row */}
       <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
         <div style={{ position: "relative", flex: 1 }}>
           <label htmlFor="modal-search-again" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
@@ -171,7 +180,6 @@ function SearchAgainFooter({ onSearch, onClose }: { onSearch: (q: string) => voi
           <span>Search</span>
         </button>
       </div>
-      {/* Bottom row: attribution + close */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <div style={{ fontFamily: T.mono, fontSize: 10, color: T.inkLt, letterSpacing: ".08em" }}>📖 World English Bible · Public Domain</div>
         <button
@@ -368,7 +376,7 @@ export default function ResultsModal({ result, onClose, onSearch }: ResultsModal
             {activeTab === "history" && (
               <div role="tabpanel" id="tabpanel-history" aria-labelledby="tab-history" style={{ padding:"20px" }}>
                 {result.timeline.map((node, i) => (
-                  <div key={node.year} style={{ display:"flex", gap:16 }}>
+                  <div key={`${node.year}-${i}`} style={{ display:"flex", gap:16 }}>
                     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", flexShrink:0, width:20 }}>
                       <div style={{ width:12, height:12, borderRadius:"50%", marginTop:4, flexShrink:0, background:i===0?T.blue:T.white, border:`2px solid ${i===0?T.blue:T.inkFt}`, boxShadow:i===0?"0 0 0 3px rgba(26,58,106,.15)":"none" }} />
                       {i < result.timeline.length-1 && <div style={{ width:1, flex:1, background:T.inkFt, minHeight:28 }} />}

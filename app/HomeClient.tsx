@@ -48,6 +48,16 @@ const BADGE_CONFIG: Record<Classification, BadgeConfig> = {
   "Church Tradition": { bg: "#F3EEF8", text: "#4A1A7A", border: "#C8A8E8", dot: "#4A1A7A", label: "Church Tradition", icon: "⛪" },
 };
 
+// ─── Slug helper (must match cacheKey in route.ts) ────────────────────────────
+function queryToSlug(query: string): string {
+  return query
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 200);
+}
+
 const SUGGESTIONS: Suggestion[] = [
   { label: "The Rapture",                         classification: "Church Tradition" },
   { label: "Guardian Angels",                     classification: "Concept Present"  },
@@ -153,7 +163,6 @@ const PLACEHOLDER_EXAMPLES = [
   'Guardian Angels',
 ];
 
-// FIX: Live search count — rotate believable numbers to signal active usage
 const LIVE_SEARCH_COUNTS = [1247, 1318, 1195, 1402, 1289, 1356, 1231, 1478];
 
 function LogoMark({ size = 36 }: { size?: number }) {
@@ -293,12 +302,10 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
   const inputRef = useRef<HTMLInputElement>(null);
   const [phIdx, setPhIdx] = useState(0);
 
-  // FIX 1: Auto-focus on mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // FIX 2: Rotate placeholder
   useEffect(() => {
     const t = setInterval(
       () => setPhIdx((i) => (i + 1) % PLACEHOLDER_EXAMPLES.length),
@@ -307,7 +314,6 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
     return () => clearInterval(t);
   }, []);
 
-  // FIX: Social proof — rotate live search count
   const [liveCount, setLiveCount] = useState(LIVE_SEARCH_COUNTS[0]);
   useEffect(() => {
     let idx = 0;
@@ -318,10 +324,8 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
     return () => clearInterval(t);
   }, []);
 
-  // FIX: Populate input on suggestion click before searching (gives user sense of control)
   const handleSuggestionClick = (label: string) => {
     setValue(label);
-    // Small delay so user sees it populate, then search fires
     setTimeout(() => onSearch(label), 80);
   };
 
@@ -330,7 +334,6 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
       <div className="hero-bg-lines" aria-hidden="true" />
       <div className="hero-ornament" aria-hidden="true" />
       <div style={{ position: "relative", zIndex: 1 }}>
-        {/* FIX: Social proof bar above heading */}
         <div className="animate-in" style={{ marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 100, background: T.greenLt, border: `1px solid #A8D4B8` }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", display: "inline-block", boxShadow: "0 0 0 2px rgba(34,197,94,.25)", animation: "pulse 2s ease-in-out infinite" }} />
@@ -379,7 +382,6 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
             {value && (
               <ClearButton onClear={() => { setValue(""); inputRef.current?.focus(); }} />
             )}
-            {/* FIX: Larger, more descriptive search button */}
             <button
               className="search-btn"
               disabled={pending}
@@ -399,7 +401,6 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
         </div>
 
         <div className="animate-in-delay-4">
-          {/* FIX: Suggestion pills populate input first, then fire search */}
           <div className="suggestions-row" role="list" aria-label="Popular searches" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
             {SUGGESTIONS.map((s) => {
               const b = BADGE_CONFIG[s.classification];
@@ -484,10 +485,8 @@ function ClassificationLegend() {
     <section className="section-sm" style={{ background: T.parchment, borderTop: `1px solid ${T.inkFt}`, borderBottom: `1px solid ${T.inkFt}` }} id="classifications" aria-labelledby="legend-heading">
       <div className="container" style={{ textAlign: "center" }}>
         <div className="section-label">Verdict System</div>
-        {/* FIX: Larger, more prominent title for this core differentiator */}
         <h2 id="legend-heading" className="section-title" style={{ fontSize: "clamp(26px, 3.5vw, 38px)", marginBottom: 10 }}>Our 5 Classification Types</h2>
         <p style={{ color: T.inkMid, fontSize: 15, maxWidth: 520, margin: "0 auto 28px", lineHeight: 1.75, fontWeight: 300 }}>Every topic receives one of these verdicts, scored on a 1–5 Clarity Scale.</p>
-        {/* FIX: Bigger badge cards, readable font sizes */}
         <div className="legend-row" role="list">
           {(Object.entries(BADGE_CONFIG) as [Classification, BadgeConfig][]).map(([key, b]) => (
             <div key={key} role="listitem" style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "12px 18px", borderRadius: 12, background: b.bg, border: `1px solid ${b.border}`, boxShadow: T.shadowSm }}>
@@ -529,7 +528,6 @@ function TrendingTopics({ onSearch }: { onSearch: (q: string) => void }) {
                   <span style={{ fontFamily: T.mono, fontSize: 10, color: T.inkLt }}>{t.searches}</span>
                 </div>
                 <div style={{ fontFamily: T.serif, fontSize: 19, fontWeight: 500, color: T.ink, lineHeight: 1.3, marginBottom: 8 }}>{t.label}</div>
-                {/* FIX: Chevron icon instead of bare arrow text */}
                 <div style={{ display: "flex", alignItems: "center", gap: 4, color: T.blue, fontSize: 12, fontWeight: 600 }}>
                   Analyze this
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
@@ -699,7 +697,6 @@ function LoadingOverlay() {
   const [factIndex, setFactIndex] = useState(0);
   const [factVisible, setFactVisible] = useState(true);
 
-  // FIX: Faster loading — compress into ~5s total instead of 18s
   useEffect(() => {
     const interval = setInterval(() => {
       setStep((s) => (s < LOADING_STEPS.length - 1 ? s + 1 : s));
@@ -871,7 +868,6 @@ function SiteFooter() {
           >☕ Donate</a>
         </nav>
         <div style={{ width: 40, height: 1, background: "rgba(255,255,255,.1)", margin: "0 auto 20px" }} aria-hidden="true" />
-
         <div style={{ marginBottom: 20 }}>
           <a href="https://www.producthunt.com/posts/is-it-in-the-bible" target="_blank" rel="noopener noreferrer" aria-label="Find us on Product Hunt">
             <img
@@ -881,7 +877,6 @@ function SiteFooter() {
             />
           </a>
         </div>
-
         <p style={{ fontFamily: T.mono, fontSize: 11, color: "rgba(255,255,255,.25)", letterSpacing: ".05em", lineHeight: 1.8, margin: 0 }}>
           © 2026 IS IT IN THE BIBLE? — ALL RIGHTS RESERVED<br />
           Verses from the World English Bible (WEB) — Public Domain · Powered by AI<br />
@@ -923,10 +918,10 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
       } else {
         const parsed = json.result as BibleResult;
         setResult(parsed);
+        // ── Update URL to /topic/slug for clean sharing & SEO ──
         if (typeof window !== "undefined") {
-          const url = new URL(window.location.href);
-          url.searchParams.set("q", query.trim());
-          window.history.pushState({}, "", url.toString());
+          const slug = queryToSlug(query.trim());
+          window.history.pushState({}, "", `/topic/${slug}`);
         }
         setLiveAnnouncement(`Analysis complete for "${query}".`);
       }
@@ -944,18 +939,22 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
   const handleCloseModal = useCallback(() => {
     setResult(null);
     setLiveAnnouncement("");
+    // ── Return to homepage cleanly ──
     if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("q");
-      window.history.replaceState({}, "", url.toString());
+      window.history.replaceState({}, "", "/");
     }
   }, []);
 
   useEffect(() => {
     if (prefetchedResult) return;
     if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const query = params.get("q");
+    // ── Support both /topic/slug and legacy ?q= URLs ──
+    const path = window.location.pathname;
+    const slugMatch = path.match(/^\/topic\/(.+)$/);
+    const queryParam = new URLSearchParams(window.location.search).get("q");
+    const query = slugMatch
+      ? decodeURIComponent(slugMatch[1]).replace(/-/g, " ")
+      : queryParam;
     if (query) handleSearch(query);
   }, [handleSearch, prefetchedResult]);
 
