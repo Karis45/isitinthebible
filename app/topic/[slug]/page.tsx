@@ -80,11 +80,8 @@ function queryToSlug(query: string): string {
 
 // ─── Data fetching ────────────────────────────────────────────────────────────
 async function getResult(slug: string): Promise<BibleResult | null> {
-  // Derive a human-readable query from the slug — used as fallback for result.query
-  // e.g. "the-rapture" → "the rapture"
   const humanQuery = decodeURIComponent(slug).replace(/-/g, " ").trim();
 
-  // 1. Try Firestore cache first
   try {
     const db  = getDb();
     const key = slugToKey(slug);
@@ -101,7 +98,6 @@ async function getResult(slug: string): Promise<BibleResult | null> {
     console.error("[topic/page] Firestore error:", err);
   }
 
-  // 2. Cache miss → call the analyze API directly and let it populate the cache
   try {
     const res = await fetch(`${SITE_URL}/api/analyze`, {
       method: "POST",
@@ -112,7 +108,6 @@ async function getResult(slug: string): Promise<BibleResult | null> {
     if (res.ok) {
       const json = await res.json();
       const result = (json.result as BibleResult) ?? null;
-      // Ensure query is always populated — API may not echo it back
       if (result && !result.query) result.query = humanQuery;
       return result;
     }
@@ -147,14 +142,15 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const result = await getResult(params.slug);
+  const { slug } = await params;
+  const result = await getResult(slug);
   if (!result) return { title: "Not Found — Is it in the Bible?" };
 
   const title       = `Is "${result.query}" in the Bible? — ${result.classification}`;
   const description = result.oneLiner;
-  const url         = `${SITE_URL}/topic/${params.slug}`;
+  const url         = `${SITE_URL}/topic/${slug}`;
   const ogUrl       = `${SITE_URL}/api/og?q=${encodeURIComponent(result.query)}&c=${encodeURIComponent(result.classification)}&s=${result.explicitnessScore}&v=${encodeURIComponent(result.oneLiner)}`;
 
   return {
@@ -269,12 +265,12 @@ function buildJsonLd(result: BibleResult, url: string) {
 export default async function TopicPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const result = await getResult(params.slug);
-  const humanQuery = decodeURIComponent(params.slug).replace(/-/g, " ").trim();
+  const { slug } = await params;
+  const result = await getResult(slug);
+  const humanQuery = decodeURIComponent(slug).replace(/-/g, " ").trim();
 
-  // Only show error page if both Firestore and the live API returned nothing
   if (!result) {
     return (
       <div style={{ background: "#F5F1E8", minHeight: "100vh", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -310,7 +306,7 @@ export default async function TopicPage({
     );
   }
 
-  const url    = `${SITE_URL}/topic/${params.slug}`;
+  const url    = `${SITE_URL}/topic/${slug}`;
   const badge  = BADGE[result.classification] ?? BADGE["Cultural"];
   const jsonLd = buildJsonLd(result, url);
 
