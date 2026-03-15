@@ -93,8 +93,7 @@ async function getResult(slug: string): Promise<BibleResult | null> {
       const data = doc.data();
       if (data?.result) {
         const result = data.result as BibleResult;
-        // Ensure query is always populated — older cached docs may not have it
-        if (!result.query) result.query = humanQuery;
+        if (!result.query) result.query = data.queryRaw ?? humanQuery;
         return result;
       }
     }
