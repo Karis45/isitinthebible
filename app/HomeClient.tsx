@@ -48,7 +48,7 @@ const BADGE_CONFIG: Record<Classification, BadgeConfig> = {
   "Church Tradition": { bg: "#F3EEF8", text: "#4A1A7A", border: "#C8A8E8", dot: "#4A1A7A", label: "Church Tradition", icon: "⛪" },
 };
 
-// ─── Slug helper (must match cacheKey in route.ts) ────────────────────────────
+// ─── Slug helper ──────────────────────────────────────────────────────────────
 function queryToSlug(query: string): string {
   return query
     .toLowerCase()
@@ -116,27 +116,11 @@ const MISQUOTES: Misquote[] = [
 ];
 
 const WHY_IT_MATTERS = [
-  {
-    icon: "📊",
-    stat: "53%",
-    label: "The Misquote Problem",
-    detail: "Over half of Americans attribute quotes to the Bible that simply aren't there — often repeating them with complete confidence.",
-  },
-  {
-    icon: "📖",
-    stat: "#1",
-    label: "Widely Owned, Rarely Read",
-    detail: "The Bible is the world's best-selling book, yet most people cannot name 5 of its 66 books. Familiarity and knowledge are not the same thing.",
-  },
-  {
-    icon: "⚡",
-    stat: "6×",
-    label: "Why Accuracy Matters",
-    detail: "Misinformation spreads six times faster than corrections online. When false quotes are attributed to Scripture, the damage outlasts the debunk.",
-  },
+  { icon: "📊", stat: "53%",  label: "The Misquote Problem",    detail: "Over half of Americans attribute quotes to the Bible that simply aren't there — often repeating them with complete confidence." },
+  { icon: "📖", stat: "#1",   label: "Widely Owned, Rarely Read", detail: "The Bible is the world's best-selling book, yet most people cannot name 5 of its 66 books. Familiarity and knowledge are not the same thing." },
+  { icon: "⚡", stat: "6×",   label: "Why Accuracy Matters",    detail: "Misinformation spreads six times faster than corrections online. When false quotes are attributed to Scripture, the damage outlasts the debunk." },
 ];
 
-// ─── Replace NAV_LINKS in HomeClient.tsx ─────────────────────────────────────
 const NAV_LINKS = [
   { label: "About",         href: "/about"         },
   { label: "Bible Myths",   href: "/bible-myths"   },
@@ -145,7 +129,6 @@ const NAV_LINKS = [
   { label: "Contact",       href: "/contact"       },
 ];
 
-// ─── Replace FOOTER_LINKS in HomeClient.tsx ───────────────────────────────────
 const FOOTER_LINKS = [
   { label: "About",          href: "/about"         },
   { label: "Bible Myths",    href: "/bible-myths"   },
@@ -168,6 +151,16 @@ const PLACEHOLDER_EXAMPLES = [
 ];
 
 const LIVE_SEARCH_COUNTS = [1247, 1318, 1195, 1402, 1289, 1356, 1231, 1478];
+
+// ─── Score helpers ────────────────────────────────────────────────────────────
+const scoreToWidth = (s: number) => `${((s - 1) / 4) * 88 + 6}%`;
+const scoreToColor = (s: number) => {
+  if (s <= 1) return "#E88080";
+  if (s <= 2) return "#E8AA60";
+  if (s <= 3) return "#F0C040";
+  if (s <= 4) return "#7EC8A0";
+  return "#5CC88A";
+};
 
 function LogoMark({ size = 36 }: { size?: number }) {
   return (
@@ -212,6 +205,132 @@ function ClearButton({ onClear, dark = false }: { onClear: () => void; dark?: bo
         <path d="M18 6 6 18M6 6l12 12" />
       </svg>
     </button>
+  );
+}
+
+// ─── FIX 1: Inline Featured Result ───────────────────────────────────────────
+// Shows the prefetched result directly on the page instead of in a modal.
+// Visitors immediately see what the tool does without having to search first.
+function InlineFeaturedResult({ result, onSearch }: { result: BibleResult; onSearch: (q: string) => void }) {
+  const b = BADGE_CONFIG[result.classification];
+  const isPositive = result.classification === "Directly Stated" || result.classification === "Concept Present";
+
+  return (
+    <section style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 48px" }} aria-label="Example result">
+      <div style={{
+        background: T.white, borderRadius: 20,
+        border: `1px solid ${T.inkFt}`,
+        overflow: "hidden", boxShadow: T.shadowMd,
+      }}>
+        {/* Header */}
+        <div style={{
+          background: `linear-gradient(135deg, ${T.blue} 0%, #0F2347 100%)`,
+          padding: "20px 24px 16px",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+            <span style={{
+              fontFamily: T.mono, fontSize: 9, letterSpacing: ".14em",
+              textTransform: "uppercase", color: "rgba(255,255,255,.5)",
+              background: "rgba(255,255,255,.1)", padding: "3px 8px", borderRadius: 4,
+            }}>
+              Example Result
+            </span>
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              padding: "4px 10px", borderRadius: 100,
+              background: b.bg, color: b.text, border: `1px solid ${b.border}`,
+              fontFamily: T.mono, fontSize: 10, fontWeight: 600,
+              letterSpacing: ".05em", textTransform: "uppercase",
+            }}>
+              <span style={{ fontSize: 12 }}>{b.icon}</span>
+              {b.label}
+            </span>
+          </div>
+          <h2 style={{
+            fontFamily: T.serif, fontSize: "clamp(18px, 3vw, 24px)",
+            fontWeight: 400, color: "white", lineHeight: 1.2,
+            letterSpacing: "-.3px", margin: "0 0 6px",
+          }}>
+            &ldquo;{result.query}&rdquo;
+          </h2>
+          <p style={{ fontFamily: T.sans, fontSize: 13, color: "rgba(255,255,255,.65)", margin: 0, lineHeight: 1.5 }}>
+            {result.oneLiner}
+          </p>
+          {/* Score bar */}
+          <div style={{ marginTop: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontFamily: T.mono, fontSize: 9, color: "rgba(255,255,255,.35)", letterSpacing: ".08em" }}>← Less Biblical</span>
+              <span style={{ fontFamily: T.mono, fontSize: 9, color: "rgba(255,255,255,.5)" }}>Score: {result.explicitnessScore} / 5 · More Biblical →</span>
+            </div>
+            <div style={{ height: 5, borderRadius: 100, background: "rgba(255,255,255,.15)" }}>
+              <div style={{
+                height: "100%", borderRadius: 100,
+                width: scoreToWidth(result.explicitnessScore),
+                background: scoreToColor(result.explicitnessScore),
+                transition: "width .6s cubic-bezier(.4,0,.2,1)",
+              }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: "16px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div style={{ padding: "12px 14px", borderRadius: 10, background: T.redLt, border: "1px solid #E8BEBE" }}>
+            <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: T.red, marginBottom: 6 }}>❌ Common Claim</div>
+            <p style={{ fontFamily: T.serif, fontSize: 13, lineHeight: 1.55, color: T.ink, fontStyle: "italic", margin: 0 }}>{result.misquoteWhat}</p>
+          </div>
+          <div style={{ padding: "12px 14px", borderRadius: 10, background: T.greenLt, border: "1px solid #A8D4B8" }}>
+            <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: T.green, marginBottom: 6 }}>✓ What It Actually Says</div>
+            <p style={{ fontFamily: T.serif, fontSize: 13, lineHeight: 1.55, color: T.ink, margin: 0 }}>{result.misquoteReality}</p>
+          </div>
+        </div>
+
+        {/* Closest verse */}
+        {result.verses[0] && (
+          <div style={{ margin: "0 24px", padding: "12px 16px", borderRadius: 10, background: T.blueLt, border: "1px solid #C0D4F0", marginBottom: 16 }}>
+            <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: T.blue, marginBottom: 4 }}>
+              Closest Verse
+            </div>
+            <p style={{ fontFamily: T.serif, fontSize: 14, fontStyle: "italic", color: T.ink, lineHeight: 1.65, margin: "0 0 4px" }}>
+              &ldquo;{result.verses[0].text}&rdquo;
+            </p>
+            <span style={{ fontFamily: T.mono, fontSize: 10, color: T.blue, fontWeight: 600 }}>— {result.verses[0].ref}</span>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div style={{
+          padding: "12px 24px 16px",
+          borderTop: `1px solid ${T.inkFt}`,
+          background: T.parchment,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexWrap: "wrap", gap: 10,
+        }}>
+          <p style={{ fontFamily: T.sans, fontSize: 12.5, color: T.inkMid, margin: 0, lineHeight: 1.5 }}>
+            This is just one example.{" "}
+            <strong style={{ color: T.ink }}>Try searching anything you've heard attributed to the Bible.</strong>
+          </p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {result.relatedTopics.slice(0, 2).map((t) => (
+              <button
+                key={t.query}
+                onClick={() => onSearch(t.query)}
+                style={{
+                  padding: "6px 12px", borderRadius: 8,
+                  border: `1px solid ${T.inkFt}`, background: T.white,
+                  fontFamily: T.sans, fontSize: 12, fontWeight: 500, color: T.inkMid,
+                  cursor: "pointer", transition: "border-color .15s, color .15s",
+                }}
+                onMouseEnter={(e) => { const el = e.currentTarget; el.style.borderColor = T.blue; el.style.color = T.blue; }}
+                onMouseLeave={(e) => { const el = e.currentTarget; el.style.borderColor = T.inkFt; el.style.color = T.inkMid; }}
+              >
+                {t.query} →
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -311,10 +430,7 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
   }, []);
 
   useEffect(() => {
-    const t = setInterval(
-      () => setPhIdx((i) => (i + 1) % PLACEHOLDER_EXAMPLES.length),
-      3000
-    );
+    const t = setInterval(() => setPhIdx((i) => (i + 1) % PLACEHOLDER_EXAMPLES.length), 3000);
     return () => clearInterval(t);
   }, []);
 
@@ -379,13 +495,9 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
               disabled={pending}
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && value.trim()) onSearch(value.trim());
-              }}
+              onKeyDown={(e) => { if (e.key === "Enter" && value.trim()) onSearch(value.trim()); }}
             />
-            {value && (
-              <ClearButton onClear={() => { setValue(""); inputRef.current?.focus(); }} />
-            )}
+            {value && <ClearButton onClear={() => { setValue(""); inputRef.current?.focus(); }} />}
             <button
               className="search-btn"
               disabled={pending}
@@ -404,16 +516,46 @@ function HeroSection({ onSearch, pending }: { onSearch: (q: string) => void; pen
           </div>
         </div>
 
+        {/* FIX 2: Bigger, clearly clickable suggestion pills */}
         <div className="animate-in-delay-4">
+          <p style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: T.inkLt, marginBottom: 10, marginTop: 20 }}>
+            Try one of these →
+          </p>
           <div className="suggestions-row" role="list" aria-label="Popular searches" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
             {SUGGESTIONS.map((s) => {
               const b = BADGE_CONFIG[s.classification];
               return (
                 <button key={s.label} role="listitem" className="sugg-pill"
                   onClick={() => handleSuggestionClick(s.label)}
-                  aria-label={`Search for ${s.label}`}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: b?.dot || "#999", display: "inline-block", flexShrink: 0 }} aria-hidden="true" />
+                  aria-label={`Search for ${s.label}`}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    padding: "8px 14px",
+                    background: T.white,
+                    border: `1.5px solid ${T.inkFt}`,
+                    borderRadius: 10,
+                    fontFamily: T.sans, fontSize: 13, fontWeight: 500,
+                    color: T.ink, cursor: "pointer",
+                    transition: "border-color .15s, box-shadow .15s, transform .15s",
+                    boxShadow: T.shadowSm,
+                    whiteSpace: "nowrap",
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget;
+                    el.style.borderColor = T.blue;
+                    el.style.boxShadow = T.shadowMd;
+                    el.style.transform = "translateY(-1px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget;
+                    el.style.borderColor = T.inkFt;
+                    el.style.boxShadow = T.shadowSm;
+                    el.style.transform = "none";
+                  }}
+                >
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: b?.dot || "#999", display: "inline-block", flexShrink: 0 }} aria-hidden="true" />
                   {s.label}
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={T.inkLt} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
                 </button>
               );
             })}
@@ -602,15 +744,9 @@ function WhyItMatters() {
           {WHY_IT_MATTERS.map((item) => (
             <div key={item.label} role="listitem" className="card" style={{ textAlign: "center", padding: "36px 28px" }}>
               <div style={{ fontSize: 32, marginBottom: 12 }} aria-hidden="true">{item.icon}</div>
-              <div style={{ fontFamily: T.serif, fontSize: 52, fontWeight: 600, color: T.blue, lineHeight: 1, letterSpacing: "-2px", marginBottom: 10 }}>
-                {item.stat}
-              </div>
-              <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 13, color: T.ink, marginBottom: 10, textTransform: "uppercase", letterSpacing: ".06em" }}>
-                {item.label}
-              </div>
-              <p style={{ fontSize: 14, color: T.inkMid, lineHeight: 1.75, fontWeight: 300, margin: 0 }}>
-                {item.detail}
-              </p>
+              <div style={{ fontFamily: T.serif, fontSize: 52, fontWeight: 600, color: T.blue, lineHeight: 1, letterSpacing: "-2px", marginBottom: 10 }}>{item.stat}</div>
+              <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 13, color: T.ink, marginBottom: 10, textTransform: "uppercase", letterSpacing: ".06em" }}>{item.label}</div>
+              <p style={{ fontSize: 14, color: T.inkMid, lineHeight: 1.75, fontWeight: 300, margin: 0 }}>{item.detail}</p>
             </div>
           ))}
         </div>
@@ -624,10 +760,7 @@ function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [phIdx, setPhIdx] = useState(0);
   useEffect(() => {
-    const t = setInterval(
-      () => setPhIdx((i) => (i + 1) % PLACEHOLDER_EXAMPLES.length),
-      3000
-    );
+    const t = setInterval(() => setPhIdx((i) => (i + 1) % PLACEHOLDER_EXAMPLES.length), 3000);
     return () => clearInterval(t);
   }, []);
 
@@ -659,13 +792,9 @@ function CTABanner({ onSearch }: { onSearch: (q: string) => void }) {
               autoComplete="off"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && value.trim()) onSearch(value.trim());
-              }}
+              onKeyDown={(e) => { if (e.key === "Enter" && value.trim()) onSearch(value.trim()); }}
             />
-            {value && (
-              <ClearButton onClear={() => { setValue(""); inputRef.current?.focus(); }} dark />
-            )}
+            {value && <ClearButton onClear={() => { setValue(""); inputRef.current?.focus(); }} dark />}
             <button className="search-btn" style={{ background: "white", minWidth: 100, gap: 6, fontSize: 13, fontWeight: 700 }} aria-label="Search"
               onClick={() => { if (value.trim()) onSearch(value.trim()); }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={T.blue} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
@@ -695,39 +824,38 @@ const LOADING_FACTS = [
   { quote: '"Cleanliness is next to godliness."',    verdict: "❌ Not in the Bible", source: "John Wesley, 1778" },
 ];
 
-function LoadingOverlay() {
+// ─── FIX 3: Cache-aware loading overlay ──────────────────────────────────────
+// Pass isCacheHit=true to skip the animation entirely for instant results.
+function LoadingOverlay({ isCacheHit }: { isCacheHit: boolean }) {
   const [step, setStep]           = useState(0);
   const [count, setCount]         = useState(0);
   const [factIndex, setFactIndex] = useState(0);
   const [factVisible, setFactVisible] = useState(true);
 
+  // Cache hits: skip straight to step 5 instantly
   useEffect(() => {
+    if (isCacheHit) { setStep(5); setCount(31102); return; }
     const interval = setInterval(() => {
       setStep((s) => (s < LOADING_STEPS.length - 1 ? s + 1 : s));
     }, 800);
     return () => clearInterval(interval);
-  }, []);
+  }, [isCacheHit]);
 
   useEffect(() => {
+    if (isCacheHit) return; // skip counter animation for cache hits
     const target = 31102;
     const duration = 4500;
     const increment = Math.ceil(target / (duration / 60));
     const interval = setInterval(() => {
-      setCount((c) => {
-        const next = c + increment;
-        return next >= target ? target : next;
-      });
+      setCount((c) => { const next = c + increment; return next >= target ? target : next; });
     }, 60);
     return () => clearInterval(interval);
-  }, []);
+  }, [isCacheHit]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setFactVisible(false);
-      setTimeout(() => {
-        setFactIndex((i) => (i + 1) % LOADING_FACTS.length);
-        setFactVisible(true);
-      }, 400);
+      setTimeout(() => { setFactIndex((i) => (i + 1) % LOADING_FACTS.length); setFactVisible(true); }, 400);
     }, 3500);
     return () => clearInterval(interval);
   }, []);
@@ -737,48 +865,42 @@ function LoadingOverlay() {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(16,14,12,.82)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px" }} aria-busy="true" aria-label="Analyzing…">
       <div style={{ fontFamily: T.serif, fontSize: "clamp(22px, 4vw, 30px)", color: "white", letterSpacing: "-.3px", marginBottom: 6, textAlign: "center" }}>
-        Analyzing <em style={{ fontStyle: "italic", color: "#7BA8E4" }}>Scripture…</em>
+        {isCacheHit ? "Loading result…" : <span>Analyzing <em style={{ fontStyle: "italic", color: "#7BA8E4" }}>Scripture…</em></span>}
       </div>
       <div style={{ fontFamily: T.mono, fontSize: 12, letterSpacing: ".1em", color: "rgba(255,255,255,.45)", marginBottom: 32, textAlign: "center" }}>
         {count.toLocaleString()} / 31,102 verses scanned
       </div>
       <div style={{ width: "min(480px, 90vw)", height: 3, background: "rgba(255,255,255,.1)", borderRadius: 3, marginBottom: 32, overflow: "hidden" }}>
-        <div style={{ height: "100%", background: "linear-gradient(90deg, #3A6AC8, #7BA8E4)", borderRadius: 3, width: `${((step + 1) / LOADING_STEPS.length) * 100}%`, transition: "width 0.6s ease" }} />
+        <div style={{ height: "100%", background: "linear-gradient(90deg, #3A6AC8, #7BA8E4)", borderRadius: 3, width: `${((step + 1) / LOADING_STEPS.length) * 100}%`, transition: isCacheHit ? "width .3s ease" : "width 0.6s ease" }} />
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 36, width: "min(480px, 90vw)" }}>
-        {LOADING_STEPS.map((s, i) => {
-          const done    = i < step;
-          const current = i === step;
-          return (
-            <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 12, opacity: i > step ? 0.25 : 1, transition: "opacity 0.4s" }}>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: done ? "#1A5C38" : current ? "rgba(255,255,255,.15)" : "rgba(255,255,255,.06)", border: done ? "none" : current ? "1.5px solid rgba(255,255,255,.4)" : "1.5px solid rgba(255,255,255,.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.4s" }}>
-                {done
-                  ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6 9 17l-5-5"/></svg>
-                  : <span style={{ fontSize: 12 }}>{s.icon}</span>
-                }
+      {!isCacheHit && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 36, width: "min(480px, 90vw)" }}>
+          {LOADING_STEPS.map((s, i) => {
+            const done    = i < step;
+            const current = i === step;
+            return (
+              <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 12, opacity: i > step ? 0.25 : 1, transition: "opacity 0.4s" }}>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: done ? "#1A5C38" : current ? "rgba(255,255,255,.15)" : "rgba(255,255,255,.06)", border: done ? "none" : current ? "1.5px solid rgba(255,255,255,.4)" : "1.5px solid rgba(255,255,255,.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.4s" }}>
+                  {done
+                    ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    : <span style={{ fontSize: 12 }}>{s.icon}</span>
+                  }
+                </div>
+                <span style={{ fontFamily: T.sans, fontSize: 13.5, color: current ? "white" : done ? "rgba(255,255,255,.55)" : "rgba(255,255,255,.3)", fontWeight: current ? 600 : 400, transition: "color 0.4s" }}>
+                  {s.label}
+                </span>
+                {current && <div style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,.2)", borderTop: "2px solid white", borderRadius: "50%", animation: "spin .7s linear infinite", marginLeft: "auto", flexShrink: 0 }} />}
               </div>
-              <span style={{ fontFamily: T.sans, fontSize: 13.5, color: current ? "white" : done ? "rgba(255,255,255,.55)" : "rgba(255,255,255,.3)", fontWeight: current ? 600 : 400, transition: "color 0.4s" }}>
-                {s.label}
-              </span>
-              {current && <div style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,.2)", borderTop: "2px solid white", borderRadius: "50%", animation: "spin .7s linear infinite", marginLeft: "auto", flexShrink: 0 }} />}
-            </div>
-          );
-        })}
-      </div>
-      <div style={{ width: "min(480px, 90vw)", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 14, padding: "16px 20px", opacity: factVisible ? 1 : 0, transition: "opacity 0.4s" }}>
-        <div style={{ fontFamily: T.mono, fontSize: 9.5, letterSpacing: ".14em", textTransform: "uppercase", color: "rgba(255,255,255,.35)", marginBottom: 8 }}>
-          Did you know?
+            );
+          })}
         </div>
-        <blockquote style={{ fontFamily: T.serif, fontSize: 15, fontStyle: "italic", color: "rgba(255,255,255,.8)", lineHeight: 1.5, marginBottom: 8 }}>
-          {fact.quote}
-        </blockquote>
+      )}
+      <div style={{ width: "min(480px, 90vw)", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 14, padding: "16px 20px", opacity: factVisible ? 1 : 0, transition: "opacity 0.4s" }}>
+        <div style={{ fontFamily: T.mono, fontSize: 9.5, letterSpacing: ".14em", textTransform: "uppercase", color: "rgba(255,255,255,.35)", marginBottom: 8 }}>Did you know?</div>
+        <blockquote style={{ fontFamily: T.serif, fontSize: 15, fontStyle: "italic", color: "rgba(255,255,255,.8)", lineHeight: 1.5, marginBottom: 8 }}>{fact.quote}</blockquote>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
-          <span style={{ fontFamily: T.mono, fontSize: 10, color: fact.verdict.startsWith("❌") ? "#F4A0A0" : "#F4D080" }}>
-            {fact.verdict}
-          </span>
-          <span style={{ fontFamily: T.mono, fontSize: 10, color: "rgba(255,255,255,.3)" }}>
-            — {fact.source}
-          </span>
+          <span style={{ fontFamily: T.mono, fontSize: 10, color: fact.verdict.startsWith("❌") ? "#F4A0A0" : "#F4D080" }}>{fact.verdict}</span>
+          <span style={{ fontFamily: T.mono, fontSize: 10, color: "rgba(255,255,255,.3)" }}>— {fact.source}</span>
         </div>
       </div>
     </div>
@@ -897,15 +1019,16 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ prefetchedResult, initialQuery }: HomeClientProps) {
-  const [result, setResult]   = useState<BibleResult | null>(prefetchedResult);
-  const [error, setError]     = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const [result, setResult]       = useState<BibleResult | null>(null); // modal results only
+  const [error, setError]         = useState<string | null>(null);
+  const [pending, setPending]     = useState(false);
+  const [isCacheHit, setIsCacheHit] = useState(false); // FIX 3: track cache hits
   const [liveAnnouncement, setLiveAnnouncement] = useState("");
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query.trim()) return;
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setResult(null); setError(null); setPending(true);
+    setResult(null); setError(null); setPending(true); setIsCacheHit(false);
     setLiveAnnouncement(`Analyzing "${query}" — reading all 31,102 Bible verses…`);
     try {
       const res = await fetch("/api/analyze", {
@@ -915,6 +1038,11 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
         signal: AbortSignal.timeout(30000),
       });
       const json = await res.json();
+
+      // FIX 3: detect cache hit from response header
+      const cacheHeader = res.headers.get("X-Cache");
+      if (cacheHeader === "HIT") setIsCacheHit(true);
+
       if (!res.ok) {
         const msg = json.error ?? "Something went wrong. Please try again.";
         setError(msg);
@@ -922,7 +1050,6 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
       } else {
         const parsed = json.result as BibleResult;
         setResult(parsed);
-        // ── Update URL to /topic/slug for clean sharing & SEO ──
         if (typeof window !== "undefined") {
           const slug = queryToSlug(query.trim());
           window.history.pushState({}, "", `/topic/${slug}`);
@@ -943,16 +1070,14 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
   const handleCloseModal = useCallback(() => {
     setResult(null);
     setLiveAnnouncement("");
-    // ── Return to homepage cleanly ──
     if (typeof window !== "undefined") {
       window.history.replaceState({}, "", "/");
     }
   }, []);
 
+  // Handle /topic/slug URLs on load — but don't auto-open for the prefetched result
   useEffect(() => {
-    if (prefetchedResult) return;
     if (typeof window === "undefined") return;
-    // ── Support both /topic/slug and legacy ?q= URLs ──
     const path = window.location.pathname;
     const slugMatch = path.match(/^\/topic\/(.+)$/);
     const queryParam = new URLSearchParams(window.location.search).get("q");
@@ -960,14 +1085,14 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
       ? decodeURIComponent(slugMatch[1]).replace(/-/g, " ")
       : queryParam;
     if (query) handleSearch(query);
-  }, [handleSearch, prefetchedResult]);
+  }, [handleSearch]);
 
   return (
     <div style={{ background: T.parchment, minHeight: "100vh" }}>
       <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: .4; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+        @media (max-width: 640px) {
+          .suggestions-row { gap: 8px !important; }
         }
       `}</style>
       <a href="#main-content" className="skip-link">Skip to main content</a>
@@ -977,6 +1102,12 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
       <SiteHeader onSearch={handleSearch} />
       <main id="main-content">
         <HeroSection onSearch={handleSearch} pending={pending} />
+
+        {/* FIX 1: Show prefetched result inline, not in a modal */}
+        {prefetchedResult && !result && !pending && (
+          <InlineFeaturedResult result={prefetchedResult} onSearch={handleSearch} />
+        )}
+
         <StatsStrip />
         {error && (
           <div style={{ maxWidth: 640, margin: "20px auto", padding: "14px 16px", background: T.redLt, border: `1px solid #E8C4C4`, borderRadius: 12, fontSize: 14, color: T.red, lineHeight: 1.6, display: "flex", alignItems: "flex-start", gap: 10 }} role="alert">
@@ -984,7 +1115,8 @@ export default function HomeClient({ prefetchedResult, initialQuery }: HomeClien
             <span>{error}</span>
           </div>
         )}
-        {pending && <LoadingOverlay />}
+        {pending && <LoadingOverlay isCacheHit={isCacheHit} />}
+        {/* Modal only for user-triggered searches */}
         <ResultsModal result={result} onClose={handleCloseModal} onSearch={handleSearch} />
         <HowItWorks />
         <ClassificationLegend />
