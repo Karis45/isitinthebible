@@ -57,7 +57,12 @@ async function getCached(key: string): Promise<BibleResult | null> {
       return null;
     }
 
-    return data.result as BibleResult;
+    const result = data.result as BibleResult;
+
+    // Backfill query from top-level queryRaw if missing — fixes old cached docs
+    if (!result.query && data.queryRaw) result.query = data.queryRaw;
+
+    return result;
   } catch (err) {
     // Never let a cache read failure block the real request
     console.warn("[cache] Read error:", err);
@@ -65,14 +70,14 @@ async function getCached(key: string): Promise<BibleResult | null> {
   }
 }
 
-async function setCached(key: string, result: BibleResult): Promise<void> {
+async function setCached(key: string, statement: string, result: BibleResult): Promise<void> {
   try {
     const db = getDb();
     await db.collection(CACHE_COLLECTION).doc(key).set({
       result,
-      cachedAt:    Timestamp.now(),
-      queryRaw:    result.query,   // handy for browsing in Firebase console
-      hitCount:    0,
+      cachedAt:  Timestamp.now(),
+      queryRaw:  statement,         // use raw user input — never undefined
+      hitCount:  0,
     });
   } catch (err) {
     // Cache write failures are non-fatal
@@ -259,6 +264,8 @@ export async function POST(req: NextRequest) {
     const cached = await getCached(key);
 
     if (cached) {
+      // Backfill query on cached result if still missing
+      if (!cached.query) cached.query = statement;
       // Fire-and-forget hit counter — don't await
       incrementHits(key);
       // Return with a header so you can verify caching is working in DevTools
@@ -279,11 +286,14 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const prompt      = `${SYSTEM_PROMPT}\n\nAnalyze this for biblical accuracy: "${statement}"`;
+    const prompt       = `${SYSTEM_PROMPT}\n\nAnalyze this for biblical accuracy: "${statement}"`;
     const geminiResult = await model.generateContent(prompt);
     const responseText = geminiResult.response.text();
 
     const parsed: BibleResult = JSON.parse(extractJSON(responseText));
+
+    // Guarantee query is always set — use statement as fallback if Gemini omits it
+    if (!parsed.query) parsed.query = statement;
 
     // Validate required fields
     const required: (keyof BibleResult)[] = [
@@ -298,7 +308,8 @@ export async function POST(req: NextRequest) {
     parsed.explicitnessScore = Math.max(1, Math.min(5, Math.round(parsed.explicitnessScore)));
 
     // ── Write to cache (non-blocking) ────────────────────────────────────────
-    setCached(key, parsed).catch(() => {});
+    // Pass statement explicitly so queryRaw is never undefined
+    setCached(key, statement, parsed).catch(() => {});
 
     return NextResponse.json(
       { result: parsed },
