@@ -80,18 +80,38 @@ function queryToSlug(query: string): string {
 
 // ─── Data fetching ────────────────────────────────────────────────────────────
 async function getResult(slug: string): Promise<BibleResult | null> {
+  // 1. Try Firestore cache first
   try {
     const db  = getDb();
     const key = slugToKey(slug);
     const doc = await db.collection("query_cache").doc(key).get();
-    if (!doc.exists) return null;
-    const data = doc.data();
-    return (data?.result as BibleResult) ?? null;
+    if (doc.exists) {
+      const data = doc.data();
+      if (data?.result) return data.result as BibleResult;
+    }
   } catch (err) {
-    // Log the real error server-side so it shows up in Vercel logs
-    console.error("[topic/page] getResult error:", err);
-    return null;
+    console.error("[topic/page] Firestore error:", err);
   }
+
+  // 2. Cache miss → call the analyze API directly and let it populate the cache
+  try {
+    const query = slugToKey(slug).replace(/-/g, " ");
+    const res = await fetch(`${SITE_URL}/api/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ statement: query }),
+      next: { revalidate: 86400 }, // ISR: cache the page for 24h after first hit
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return (json.result as BibleResult) ?? null;
+    }
+    console.error("[topic/page] Live API returned", res.status, "for slug:", slug);
+  } catch (err) {
+    console.error("[topic/page] Live API fallback error:", err);
+  }
+
+  return null;
 }
 
 async function getAllCachedSlugs(): Promise<string[]> {
@@ -242,7 +262,44 @@ export default async function TopicPage({
   params: { slug: string };
 }) {
   const result = await getResult(params.slug);
-  if (!result) notFound();
+
+  // Only hard 404 if both Firestore and the live API returned nothing
+  if (!result) {
+    const humanQuery = slugToKey(params.slug).replace(/-/g, " ");
+    return (
+      <div style={{ background: "#F5F1E8", minHeight: "100vh", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+        {/* ── Nav ── */}
+        <nav style={{ background: "white", borderBottom: "1px solid #D8D0C4", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+            <div style={{ width: 32, height: 32, background: "#1A3A6A", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: "white", fontSize: 16 }}>📖</span>
+            </div>
+            <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 17, fontWeight: 600, color: "#1A1612" }}>
+              Is it in the <em style={{ color: "#1A3A6A", fontStyle: "italic" }}>Bible?</em>
+            </span>
+          </Link>
+          <Link href="/" style={{ padding: "7px 16px", background: "#1A3A6A", color: "white", borderRadius: 10, textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
+            Search
+          </Link>
+        </nav>
+        <main style={{ maxWidth: 600, margin: "0 auto", padding: "80px 24px", textAlign: "center" }}>
+          <div style={{ fontSize: 56, marginBottom: 24 }}>📖</div>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 400, color: "#1A1612", marginBottom: 16, lineHeight: 1.2 }}>
+            This topic isn&apos;t in our cache yet
+          </h1>
+          <p style={{ fontSize: 16, color: "#4A3F35", lineHeight: 1.75, marginBottom: 32 }}>
+            We couldn&apos;t find an analysis for &ldquo;{humanQuery}&rdquo;. Search for it from the homepage and our AI will analyze it instantly.
+          </p>
+          <Link
+            href={`/?q=${encodeURIComponent(humanQuery)}`}
+            style={{ display: "inline-block", padding: "12px 28px", background: "#1A3A6A", color: "white", borderRadius: 12, fontWeight: 700, fontSize: 14, textDecoration: "none" }}
+          >
+            Search for &ldquo;{humanQuery}&rdquo; →
+          </Link>
+        </main>
+      </div>
+    );
+  }
 
   const url    = `${SITE_URL}/topic/${params.slug}`;
   const badge  = BADGE[result.classification] ?? BADGE["Cultural"];
