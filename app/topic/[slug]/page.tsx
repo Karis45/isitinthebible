@@ -104,7 +104,12 @@ async function getResult(slug: string): Promise<BibleResult | null> {
     });
     if (res.ok) {
       const json = await res.json();
-      return (json.result as BibleResult) ?? null;
+      const result = (json.result as BibleResult) ?? null;
+      // Ensure query is always populated — API may not echo it back
+      if (result && !result.query) {
+        result.query = query;
+      }
+      return result;
     }
     console.error("[topic/page] Live API returned", res.status, "for slug:", slug);
   } catch (err) {
