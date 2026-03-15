@@ -136,15 +136,19 @@ const WHY_IT_MATTERS = [
   },
 ];
 
+// ─── Replace NAV_LINKS in HomeClient.tsx ─────────────────────────────────────
 const NAV_LINKS = [
   { label: "About",         href: "/about"         },
+  { label: "Bible Myths",   href: "/bible-myths"   },
   { label: "Methodology",   href: "/methodology"   },
   { label: "Browse Topics", href: "#browse-topics" },
   { label: "Contact",       href: "/contact"       },
 ];
 
+// ─── Replace FOOTER_LINKS in HomeClient.tsx ───────────────────────────────────
 const FOOTER_LINKS = [
   { label: "About",          href: "/about"         },
+  { label: "Bible Myths",    href: "/bible-myths"   },
   { label: "Methodology",    href: "/methodology"   },
   { label: "Privacy Policy", href: "/privacy"       },
   { label: "Terms of Use",   href: "/terms"         },
