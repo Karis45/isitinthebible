@@ -6,6 +6,7 @@ import Link from "next/link";
 
 // ─── Allow server-rendering for slugs not pre-built at deploy time ────────────
 export const dynamicParams = true;
+export const revalidate = 0; // disable ISR cache — force fresh render to clear stale "undefined" pages
 
 const SITE_URL = "https://isitinthebible.vercel.app";
 
@@ -107,7 +108,7 @@ async function getResult(slug: string): Promise<BibleResult | null> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ statement: humanQuery }),
-      next: { revalidate: 86400 }, // ISR: cache the page for 24h after first hit
+      cache: "no-store",
     });
     if (res.ok) {
       const json = await res.json();
